@@ -21,12 +21,18 @@
  *****************************************************************************/
 
 require_once('../../system/common.php');
+require_once('../../system/drbv_database.php');
 require_once('../../system/classes/form_elements.php');
 require_once('../../system/classes/table_date.php');
 require_once('../../system/classes/table_members.php');
 require_once('../../system/classes/table_roles.php');
 require_once('../../system/classes/table_rooms.php');
 require_once(SERVER_PATH. '/adm_program/system/classes/email.php');
+
+
+unset($_SESSION['$neue_tn']);
+
+// $_SESSION['test4'] = $_SESSION['$neue_tn'] + 1;
 
 // pruefen ob das Modul ueberhaupt aktiviert ist
 if ($gPreferences['enable_dates_module'] == 0)
@@ -36,11 +42,11 @@ if ($gPreferences['enable_dates_module'] == 0)
 }
 
 // Initialize and check the parameters
+
 $getDateId = admFuncVariableIsValid($_GET, 'dat_id', 'numeric', 0);
 $getMode   = admFuncVariableIsValid($_GET, 'mode', 'numeric', null, true);
 $getRoleId = admFuncVariableIsValid($_GET, 'rol_id', 'numeric', 0);
 $getNumberRoleSelect = admFuncVariableIsValid($_GET, 'number_role_select', 'numeric');
-
 
 if($getMode != 6 || $gPreferences['enable_dates_module'] == 2)
 {
@@ -54,8 +60,12 @@ if(!$gCurrentUser->editDates() && $getMode != 3 && $getMode != 4 && $getMode != 
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
+// echo'Zeile 63 vor new TableDate:<br>';  print_r($_POST); echo'<br>';
+
 // Terminobjekt anlegen
 $date = new TableDate($gDb);
+
+// echo'Zeile 68 nach new TableDate:<br>';  print_r($_POST); echo'<br>';
 
 if($getDateId > 0)
 {
@@ -72,6 +82,33 @@ if($getMode == 1)  // Neuen Termin anlegen/aendern
 {
     $_SESSION['dates_request'] = $_POST;
     
+        if($_SESSION['dates_request']['Art'] == "1")
+         $neue_tn = "1" . $_SESSION['dates_request']['jahr'] . $_SESSION['dates_request']['monat'] . "00";
+        if($_SESSION['dates_request']['Art'] == "2")
+         $neue_tn = "2" . $_SESSION['dates_request']['jahr'] . $_SESSION['dates_request']['monat'] . "00"; 
+     
+         $neue_tn_beginn = $neue_tn - 1;       
+
+        if(substr($neue_tn,1,4) != "0000")
+          { 
+           $neue_max = $neue_tn + "99";
+
+           $sqlab = "SELECT MAX(dat_turniernummer) FROM adm_dates WHERE dat_turniernummer > $neue_tn_beginn AND dat_turniernummer < $neue_max";
+           $turnier_nummer = mysqli_query(ADMIDIOdb(), $sqlab);
+           $letzte_tn = mysqli_fetch_row($turnier_nummer);
+             
+           if(!$letzte_tn[0])
+             {
+              $_SESSION['$neue_tn'] = $neue_tn;             
+             }
+           else 
+             {
+               $_SESSION['$neue_tn']  = $letzte_tn[0] + 1;
+             } 
+                             
+           if($neue_tn == 1)
+              unset($neue_tn);
+          }
     // ------------------------------------------------
     // pruefen ob alle notwendigen Felder gefuellt sind
     // ------------------------------------------------
@@ -112,17 +149,171 @@ if($getMode == 1)  // Neuen Termin anlegen/aendern
         $date->setValue('dat_all_day', 0);
     }
     
+    if(isset($_POST['dat_sk_s']))
+    {
+        $date->setValue('dat_sk_s', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_s', 0);
+    }
+
+    if(isset($_POST['dat_sk_j']))
+    {
+        $date->setValue('dat_sk_j', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_j', 0);
+    }
+
+    if(isset($_POST['dat_sk_c']))
+    {
+        $date->setValue('dat_sk_c', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_c', 0);
+    }
+
+    if(isset($_POST['dat_sk_b']))
+    {
+        $date->setValue('dat_sk_b', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_b', 0);
+    }
+
+    if(isset($_POST['dat_sk_a']))
+    {
+        $date->setValue('dat_sk_a', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_a', 0);
+    }
+    if(isset($_POST['dat_sk_bwh']))
+    {
+        $date->setValue('dat_sk_bwh', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_bwh', 0);
+    }
+    if(isset($_POST['dat_sk_bwo']))
+    {
+        $date->setValue('dat_sk_bwo', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_bwo', 0);
+    }
+
+// Boogie Woogie B-Klasse    
+    if(isset($_POST['dat_sk_bwh_b']))
+    {
+        $date->setValue('dat_sk_bwh_b', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_bwh_b', 0);
+    }
+    if(isset($_POST['dat_sk_bwo_b']))
+    {
+        $date->setValue('dat_sk_bwo_b', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_bwo_b', 0);
+    }
+    
+    if(isset($_POST['dat_sk_bwj']))
+    {
+        $date->setValue('dat_sk_bwj', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_bwj', 0);
+    }
+    if(isset($_POST['dat_sk_frm']))
+    {
+        $date->setValue('dat_sk_frm', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_frm', 0);
+    }
+    if(isset($_POST['dat_sk_frj']))
+    {
+        $date->setValue('dat_sk_frj', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_frj', 0);
+    }
+    if(isset($_POST['dat_sk_frl']))
+    {
+        $date->setValue('dat_sk_frl', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_frl', 0);
+    }
+    if(isset($_POST['dat_sk_frg']))
+    {
+        $date->setValue('dat_sk_frg', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_frg', 0);
+    }
+    if(isset($_POST['dat_sk_frs']))
+    {
+        $date->setValue('dat_sk_frs', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_frs', 0);
+    }  
+    if(isset($_POST['dat_sk_fbm']))
+    {
+        $date->setValue('dat_sk_fbm', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_fbm', 0);
+    }
+    if(isset($_POST['dat_quali']))
+    {
+        $date->setValue('dat_quali', 1);
+    }
+    else
+    {
+        $date->setValue('dat_quali', 0);
+    }  
+    if(isset($_POST['dat_sk_bsp']))
+    {
+        $date->setValue('dat_sk_bsp', 1);
+    }
+    else
+    {
+        $date->setValue('dat_sk_bsp', 0);
+    }  
     if(isset($_POST['role_1']) == false || $_POST['role_1'] == 0)
     {
         $gMessage->show($gL10n->get('SYS_FIELD_EMPTY', $gL10n->get('DAT_VISIBLE_TO')));
     }
 
+
+
     // das Land nur zusammen mit dem Ort abspeichern
+/*    
     if(strlen($_POST['dat_location']) == 0)
     {
         $_POST['dat_country'] = '';
     }
-
+*/
     // ------------------------------------------------
     // Datum und Uhrzeit auf Gueltigkeit pruefen
     // ------------------------------------------------
@@ -157,6 +348,38 @@ if($getMode == 1)  // Neuen Termin anlegen/aendern
     {
         $_POST['time_to'] = $_POST['time_from'];
     }
+    
+    // wenn dat_location nicht gefüllt ist (was immer der Fall ist), dann neue location felder nehmen
+    if(strlen($_POST['dat_location']) == 0)
+    {
+      if(strlen($_POST['dat_location_wo']) > 0)
+      {
+        $_POST['dat_location'] = ($_POST['dat_location_wo']);
+      }
+      if(strlen($_POST['dat_location_wo']) > 0 && strlen($_POST['dat_location_str']) > 0)
+      {
+        $_POST['dat_location'] .= ' - ';
+      }
+      if(strlen($_POST['dat_location_str']) > 0)
+      {
+        $_POST['dat_location'] .= ($_POST['dat_location_str']);
+      }
+      if(strlen($_POST['dat_location_str']) > 0 && strlen($_POST['dat_location_plz']) > 0)
+      {
+        $_POST['dat_location'] .= ' - ';
+      } elseif(strlen($_POST['dat_location_wo']) > 0 && strlen($_POST['dat_location_plz']) > 0) 
+      {
+        $_POST['dat_location'] .= ' - ';
+      }
+      if(strlen($_POST['dat_location_plz']) > 0 )
+      {
+        $_POST['dat_location'] .= ($_POST['dat_location_plz']);
+      }
+      if(strlen($_POST['dat_location_ort']) > 0 )
+      {
+        $_POST['dat_location'] .= (' '.$_POST['dat_location_ort']);
+      }
+    }  
     
     $endDateTime = new DateTimeExtended($_POST['date_to'].' '.$_POST['time_to'], $gPreferences['system_date'].' '.$gPreferences['system_time']);
 
@@ -197,6 +420,80 @@ if($getMode == 1)  // Neuen Termin anlegen/aendern
     {
         $_POST['dat_all_day'] = 0;
     }
+    if(isset($_POST['dat_sk_s']) == false)
+    {
+        $_POST['dat_sk_s'] = 0;
+    }
+    if(isset($_POST['dat_sk_j']) == false)
+    {
+        $_POST['dat_sk_j'] = 0;
+    }
+    if(isset($_POST['dat_sk_c']) == false)
+    {
+        $_POST['dat_sk_c'] = 0;
+    }
+    if(isset($_POST['dat_sk_b']) == false)
+    {
+        $_POST['dat_sk_b'] = 0;
+    }
+    if(isset($_POST['dat_sk_a']) == false)
+    {
+        $_POST['dat_sk_a'] = 0;
+    }
+    if(isset($_POST['dat_sk_bwh']) == false)
+    {
+        $_POST['dat_sk_bwh'] = 0;
+    }  
+    if(isset($_POST['dat_sk_bwo']) == false)
+    {
+        $_POST['dat_sk_bwo'] = 0;
+    }
+// Boogie Woogie B-Klasse    
+    if(isset($_POST['dat_sk_bwh_b']) == false)
+    {
+        $_POST['dat_sk_bwh_b'] = 0;
+    }  
+    if(isset($_POST['dat_sk_bwo_b']) == false)
+    {
+        $_POST['dat_sk_bwo_b'] = 0;
+    }
+          
+    if(isset($_POST['dat_sk_bwj']) == false)
+    {
+        $_POST['dat_sk_bwj'] = 0;
+    }  
+    if(isset($_POST['dat_sk_frm']) == false)
+    {
+        $_POST['dat_sk_frm'] = 0;
+    }  
+    if(isset($_POST['dat_sk_frj']) == false)
+    {
+        $_POST['dat_sk_frj'] = 0;
+    }  
+    if(isset($_POST['dat_sk_frl']) == false)
+    {
+        $_POST['dat_sk_frl'] = 0;
+    }  
+    if(isset($_POST['dat_sk_frg']) == false)
+    {
+        $_POST['dat_sk_frg'] = 0;
+    }
+    if(isset($_POST['dat_sk_frs']) == false)
+    {
+        $_POST['dat_sk_frs'] = 0;
+    }    
+    if(isset($_POST['dat_sk_fbm']) == false)
+    {
+        $_POST['dat_sk_fbm'] = 0;
+    }
+    if(isset($_POST['dat_quali']) == false)
+    {
+        $_POST['dat_quali'] = 0;
+    }      
+    if(isset($_POST['dat_sk_bsp']) == false)
+    {
+        $_POST['dat_sk_bsp'] = 0;
+    }      
     if(isset($_POST['dateRegistrationPossible']) == false)
     {
         $_POST['dateRegistrationPossible'] = 0;
@@ -211,8 +508,17 @@ if($getMode == 1)  // Neuen Termin anlegen/aendern
 		$_POST['dat_max_members'] = 0;
 	}
     
+  // sicher  
     // make html in description secure
     $_POST['dat_description'] = admFuncVariableIsValid($_POST, 'dat_description', 'html');
+    $_POST['dat_notiz'] = admFuncVariableIsValid($_POST, 'dat_notiz', 'html');
+    $_POST['dat_ansprechpartner'] = admFuncVariableIsValid($_POST, 'dat_ansprechpartner', 'html');
+    $_POST['dat_ansprechpartner_anschrift'] = admFuncVariableIsValid($_POST, 'dat_ansprechpartner_anschrift', 'html'); 
+    $_POST['dat_tel'] = admFuncVariableIsValid($_POST, 'dat_tel', 'html');
+    $_POST['dat_fax'] = admFuncVariableIsValid($_POST, 'dat_fax', 'html');
+    $_POST['dat_handy'] = admFuncVariableIsValid($_POST, 'dat_handy', 'html'); 
+    $_POST['dat_mail'] = admFuncVariableIsValid($_POST, 'dat_mail', 'html');
+    $_POST['dat_link'] = admFuncVariableIsValid($_POST, 'dat_link', 'html'); 
 	
     // ------------------------------------------------
     // Prüfen ob gewaehlter Raum bereits zu dem Termin reserviert ist
@@ -332,9 +638,10 @@ if($getMode == 1)  // Neuen Termin anlegen/aendern
 		$message = $gL10n->get('DAT_EMAIL_NOTIFICATION_MESSAGE_PART1', $gCurrentOrganization->getValue('org_longname'), $_POST['dat_headline'], $datum. ' ('. $zeit. ')', $calendar)
                   .$gL10n->get('DAT_EMAIL_NOTIFICATION_MESSAGE_PART2', $ort, $raum, $teilnehmer, $gCurrentUser->getValue('FIRST_NAME').' '.$gCurrentUser->getValue('LAST_NAME'))
                   .$gL10n->get('DAT_EMAIL_NOTIFICATION_MESSAGE_PART3', date($gPreferences['system_date'], time()));
-        
+    /*  
         $notification = new Email();
         $notification->adminNotfication($gL10n->get('DAT_EMAIL_NOTIFICATION_TITLE'), $message, $gCurrentUser->getValue('FIRST_NAME').' '.$gCurrentUser->getValue('LAST_NAME'), $gCurrentUser->getValue('EMAIL'));
+   */
 	}
     
     // ----------------------------------------
@@ -379,11 +686,16 @@ if($getMode == 1)  // Neuen Termin anlegen/aendern
     elseif($_POST['dateRegistrationPossible'] == 0 && $date->getValue('dat_rol_id') > 0)
     {
     	// date participation was deselected -> delete flag in event and than delete role
+      if($gCurrentUser->isWebmaster()){
         $role = new TableRoles($gDb, $date->getValue('dat_rol_id'));
         $date->setValue('dat_rol_id', '');
         $date->save();
         $role->delete();
 	}
+      else {
+        $date->save();
+      }
+    }
     elseif($_POST['dateRegistrationPossible'] == 1 && $date->getValue('dat_rol_id') > 0)
     {
         // if event exists and you could register to this event then we must check
@@ -419,7 +731,12 @@ if($getMode == 1)  // Neuen Termin anlegen/aendern
     unset($_SESSION['dates_request']);
     $gNavigation->deleteLastUrl();
 
-    header('Location: '. $gNavigation->getUrl());
+// Thomas:  . "satz=" . $date->getValue('dat_rol_id') . "&datum=" . $date->getValue('dat_begin')
+    $org_rueckgabe = $gNavigation->getUrl();
+    $rueckgabe = explode("?", $org_rueckgabe);
+ 
+// org    header('Location: '. $gNavigation->getUrl() . "satz=" . $date->getValue('dat_rol_id') );
+    header('Location: '. $rueckgabe[0] . "?satz=" . $date->getValue('dat_rol_id') );
     exit();
 }
 elseif($getMode == 2)  // Termin loeschen

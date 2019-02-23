@@ -72,6 +72,7 @@ if(is_numeric($_POST['weblinks_redirect_seconds']) == false || $_POST['weblinks_
 $checkboxes = array('dates_show_calendar_select'
                    ,'dates_show_map_link'
                    ,'dates_show_rooms'
+                   ,'drbv_disable_akro_check'                     
                    ,'enable_system_mails'
 				   ,'enable_email_notification'
                    ,'enable_mail_captcha'

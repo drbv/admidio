@@ -276,12 +276,12 @@ function admFuncProcessableImageSize()
     //falls in php.ini nicht gesetzt
     if($memory_limit=='')
     {
-       $memory_limit=='8M';
+       $memory_limit ='8M';
     }
     //falls in php.ini abgeschaltet
     if($memory_limit==-1)
     {
-       $memory_limit=='128M';
+       $memory_limit ='128M';
     }
     switch(admStrToLower(substr($memory_limit,strlen($memory_limit/1),1)))
     {
@@ -321,7 +321,8 @@ function admFuncProcessableImageSize()
  *  // string initialized with actual and the only allowed values are actual and old
  *  $getMode = admFuncVariableIsValid($_GET, 'mode', 'string', 'actual', false, array('actual', 'old')); @endcode
  */
-function admFuncVariableIsValid($array, $variableName, $datatype, $defaultValue = null, $requireValue = false, $validValues = null, $directOutput = false)
+//function admFuncVariableIsValid($array, $variableName, $datatype, $defaultValue = null, $requireValue = false, $validValues = null, $directOutput = false)
+function admFuncVariableIsValid($array, $variableName, $datatype = '', $defaultValue = null, $requireValue = false, $validValues = null, $directOutput = false)
 {
 	global $gL10n, $gMessage, $gPreferences;
 	
@@ -499,10 +500,10 @@ function admFuncCheckDatabaseVersion($dbVersion, $dbVersionBeta, $webmaster, $em
  */
 function admFuncShowCreateChangeInfoById($userIdCreated, $timestampCreate, $userIdEdited, $timestampEdited)
 {
-    global $gDb, $gProfileFields, $gL10n, $gPreferences;
+    global $gDb, $gProfileFields, $gL10n, $gPreferences, $gCurrentUser;
     
     // only show info if system setting is activated
-    if($gPreferences['system_show_create_edit'] > 0)
+    if($gPreferences['system_show_create_edit'] > 0 || $gCurrentUser->isWebmaster())
     {
         $htmlCreateName = '';
         $htmlEditName   = '';
@@ -514,7 +515,7 @@ function admFuncShowCreateChangeInfoById($userIdCreated, $timestampCreate, $user
             {
                 $userCreate = new User($gDb, $gProfileFields, $userIdCreated);
                 
-                if($gPreferences['system_show_create_edit'] == 1)
+                if($gPreferences['system_show_create_edit'] == 1 || $gCurrentUser->isWebmaster())
                 {
                     $htmlCreateName = $userCreate->getValue('FIRST_NAME'). ' '. $userCreate->getValue('LAST_NAME');
                 }
@@ -536,7 +537,7 @@ function admFuncShowCreateChangeInfoById($userIdCreated, $timestampCreate, $user
             {
                 $userEdit = new User($gDb, $gProfileFields, $userIdEdited);
                 
-                if($gPreferences['system_show_create_edit'] == 1)
+                if($gPreferences['system_show_create_edit'] == 1 || $gCurrentUser->isWebmaster())
                 {
                     $htmlEditName = $userEdit->getValue('FIRST_NAME'). ' '. $userEdit->getValue('LAST_NAME');
                 }
@@ -576,12 +577,12 @@ function admFuncShowCreateChangeInfoById($userIdCreated, $timestampCreate, $user
  */
 function admFuncShowCreateChangeInfoByName($userNameCreated, $timestampCreate, $userNameEdited, $timestampEdited, $userIdCreated = 0, $userIdEdited = 0)
 {
-    global $gDb, $gProfileFields, $gL10n, $gValidLogin, $g_root_path, $gPreferences;
+    global $gDb, $gProfileFields, $gL10n, $gValidLogin, $g_root_path, $gPreferences, $gCurrentUser;
 
     $html = '';
 
     // only show info if system setting is activated
-    if($gPreferences['system_show_create_edit'] > 0)
+    if($gPreferences['system_show_create_edit'] > 0 || $gCurrentUser->isWebmaster() )
     {
         // compose name of user who create the recordset
         if(strlen($timestampCreate) > 0)

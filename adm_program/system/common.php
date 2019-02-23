@@ -78,7 +78,9 @@ if(!isset($gDbType))
 {
     $gDbType = 'mysql';
 }
+  
 $gDb = Database::createDatabaseObject($gDbType);
+    
 if($gDb->connect($g_adm_srv, $g_adm_usr, $g_adm_pw, $g_adm_db) == false)
 {
     // organization not found

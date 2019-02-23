@@ -11,6 +11,7 @@
         <div id="sidebar" class="content">
             <?php
   
+	    include(SERVER_PATH."/adm_plugins/appmidio/appmidio.php");
             include(SERVER_PATH. '/adm_plugins/login_form/login_form.php');
 			            
 			// prepare the menus here so that the plugins have a chance to modify them

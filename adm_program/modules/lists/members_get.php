@@ -61,7 +61,8 @@ else
             AND rol_valid  = 1
             AND rol_cat_id = cat_id
             AND (  cat_org_id = '. $gCurrentOrganization->getValue('org_id'). '
-                OR cat_org_id IS NULL )) ';
+                OR cat_org_id IS NULL )
+        ) ';
 }
 
 //Suchstring zerlegen
@@ -85,7 +86,7 @@ if(strlen($postMembersSearch) > 0)
 
 
  // SQL-Statement zusammensetzen
-$sql = 'SELECT DISTINCT usr_id, last_name.usd_value as last_name, first_name.usd_value as first_name, birthday.usd_value as birthday,
+$sql = 'SELECT DISTINCT usr_id, last_name.usd_value as last_name, first_name.usd_value as first_name, verein.usd_value as verein, birthday.usd_value as birthday,
                city.usd_value as city, address.usd_value as address, zip_code.usd_value as zip_code, country.usd_value as country,
                mem_usr_id as member_this_role, mem_leader as leader_this_role,
                   (SELECT count(*)
@@ -105,6 +106,9 @@ $sql = 'SELECT DISTINCT usr_id, last_name.usd_value as last_name, first_name.usd
         LEFT JOIN '. TBL_USER_DATA. ' as first_name
           ON first_name.usd_usr_id = usr_id
          AND first_name.usd_usf_id = '. $gProfileFields->getProperty('FIRST_NAME', 'usf_id'). '
+        LEFT JOIN '. TBL_USER_DATA. ' as verein
+          ON verein.usd_usr_id = usr_id
+         AND verein.usd_usf_id = '. $gProfileFields->getProperty('VEREIN', 'usf_id'). '       
         LEFT JOIN '. TBL_USER_DATA. ' as birthday
           ON birthday.usd_usr_id = usr_id
          AND birthday.usd_usf_id = '. $gProfileFields->getProperty('BIRTHDAY', 'usf_id'). '
@@ -177,7 +181,7 @@ if($gDb->num_rows($resultUser)>0)
     
     // create table header
     echo '
-    <table class="tableList" cellspacing="0">
+    <table class="tableList" cellspacing="0" border="1" rules="all">
         <thead>
             <tr>
                 <th><img class="iconInformation"
@@ -186,6 +190,7 @@ if($gDb->num_rows($resultUser)>0)
                 <th style="text-align: center;">'.$gL10n->get('SYS_MEMBER').'</th>
                 <th>'.$gL10n->get('SYS_LASTNAME').'</th>
                 <th>'.$gL10n->get('SYS_FIRSTNAME').'</th>
+                <th>Vereinsname</th>
                 <th><img class="iconInformation" src="'. THEME_PATH. '/icons/map.png" 
                     alt="'.$gL10n->get('SYS_ADDRESS').'" title="'.$gL10n->get('SYS_ADDRESS').'" /></th>
                 <th>'.$gL10n->get('SYS_BIRTHDAY').'</th>
@@ -234,6 +239,7 @@ if($gDb->num_rows($resultUser)>0)
     //Zeilen ausgeben
     while($user = $gDb->fetch_array($resultUser))
     {
+            
     	if($gDb->num_rows($resultUser) >= 50)
     	{
             // Buchstaben auslesen
@@ -307,9 +313,11 @@ if($gDb->num_rows($resultUser)>0)
                 {
                     echo '<input type="checkbox" id="member_'.$user['usr_id'].'" name="member_'.$user['usr_id'].'" class="memlist_checkbox" checkboxtype="member"/>';
                 }
+      //rmenken  
             echo '<b id="loadindicator_member_'.$user['usr_id'].'"></b></td>
             <td>'.$user['last_name'].'</td>
             <td>'.$user['first_name'].'</td>
+            <td>'.$user['verein'].'</td>
             <td>';
                 if(strlen($user_text) > 0)
                 {

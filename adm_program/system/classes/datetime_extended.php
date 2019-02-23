@@ -81,6 +81,7 @@ class DateTimeExtended extends DateTime
             }
         }
         $age = $act_date['year'] - $this->year;
+
         if($birthday == false)
         {
             $age--;
@@ -126,17 +127,15 @@ class DateTimeExtended extends DateTime
 		}
     }
 
-    // setzt das Datum und die Uhrzeit fuer das aktuelle Objekt
-    // erwartet wird ein String und das dazugehoerige Format aehnlich date()
-    public function setDateTime($date, $format)
+    /** Method will replace a valid php date or time format into a valid
+     *  regex syntax. This method to not accept the complete format string.
+     *  Only a segement of the format can be given to this method, so you
+     *  must call this method several times to get the whole format.
+     *  @param $formatArray An array with a part of a datetime format e.g. $array(0 => 'd')
+     *  @return Returns the regex for the format array element e.g. (?P<d>0[1-9]|[12][0-9]|3[01])
+     */
+    public static function replaceDatetimeFormatIntoRegex($formatArray)
     {
-        $this->year   = 0;
-        $this->month  = 0;
-        $this->day    = 0;
-        $this->hour   = 0;
-        $this->minute = 0;
-        $this->second = 0;
-        $this->errorCode = 0;      
         $formatPatterns = array(
             'a' => '(?P<a>am|pm)',
             'A' => '(?P<A>AM|PM)',
@@ -172,7 +171,30 @@ class DateTimeExtended extends DateTime
             'Z' => '(?P<Z>-?(?:[0-9]|[1-9][0-9]{3}|[1-3][0-9]{4}|4(?:[0-2][0-9]{3}|3[01][0-9]{2}|3200)))',
         );
 
-        $regexp = preg_replace('/[a-zA-Z]/e', 'isset($formatPatterns["$0"])?$formatPatterns["$0"]:"$0"', $format);
+        if(isset($formatPatterns[$formatArray[0]]))
+        {
+            return $formatPatterns[$formatArray[0]];
+        }
+        else
+        {
+            return $formatArray[0];
+        }
+    }
+
+    // setzt das Datum und die Uhrzeit fuer das aktuelle Objekt
+    // erwartet wird ein String und das dazugehoerige Format aehnlich date()
+    public function setDateTime($date, $format)
+    {
+        $this->year   = 0;
+        $this->month  = 0;
+        $this->day    = 0;
+        $this->hour   = 0;
+        $this->minute = 0;
+        $this->second = 0;
+        $this->errorCode = 0;
+        
+        $regexp = preg_replace_callback('/[a-zA-Z]/', "DateTimeExtended::replaceDatetimeFormatIntoRegex", $format);
+
         if (preg_match('/^'.$regexp.'$/', trim($date), $match))
         {
             foreach ($match as $format => $value) 

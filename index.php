@@ -1,5 +1,7 @@
 <?php
-/******************************************************************************
+
+/*
+******************************************************************************
  * Set the correct startpage for Admidio
  *
  * Copyright    : (c) 2004 - 2013 The Admidio Team
@@ -7,6 +9,9 @@
  * License      : GNU Public License 2 http://www.gnu.org/licenses/gpl-2.0.html
  *
  *****************************************************************************/
+
+
+// error_reporting (E_ALL);
 
 if(file_exists('config.php'))
 {

@@ -30,8 +30,8 @@
  * view_mode          - content output in 'html', 'compact' or 'print' view
  *                      (Default: according to preferences)
  *****************************************************************************/
-
 require_once('../../system/common.php');
+require_once('../../system/drbv_database.php');
 require_once('../../system/classes/form_elements.php');
 require_once('../../system/classes/module_dates.php');
 require_once('../../system/classes/module_menu.php');
@@ -39,7 +39,44 @@ require_once('../../system/classes/participants.php');
 require_once('../../system/classes/table_category.php');
 require_once('../../system/classes/table_date.php');
 require_once('../../system/classes/table_rooms.php');
+
 unset($_SESSION['dates_request']);
+
+// Thomas  Leiter hinzufügen
+$datum = date("Y-m-d");
+$heute = date("d.m.Y");
+
+if($_GET['satz'] > 0)
+{
+$sqlab = "SELECT mem_rol_id FROM adm_members WHERE mem_rol_id = " . $_GET['satz'];
+// echo"$sqlab<br>";
+$nv = mysqli_query(ADMIDIOdb(), $sqlab);
+  if(mysqli_num_rows($nv) <1)
+  {
+//$sqlab = "SELECT mem_usr_id FROM adm_members WHERE mem_rol_id = 14";
+//rmenken: changed to 102 which is the id for 'Vereine'    
+$sqlab = "SELECT mem_usr_id FROM adm_members WHERE mem_rol_id = 102";
+    
+$erg_leiter = mysqli_query(ADMIDIOdb(), $sqlab);
+
+while($temp=mysqli_fetch_array($erg_leiter))
+   {
+    $leiter = $temp[0];
+    if($leiter > 8)
+    {
+     // Daten schreiben      
+
+     $sqlab = "INSERT INTO adm_members (mem_rol_id, mem_usr_id, mem_begin, mem_end, mem_leader, mem_usr_id_create) VALUES ('" . $_GET['satz'] . "', '$leiter', '$datum', '9999-12-31', '1', '2') ";
+     mysqli_query(ADMIDIOdb(), $sqlab);
+ 
+// Ende if
+    }
+// Ende while          
+   }
+  }
+}
+
+// Ende Leiter hinzufügen
 
 
 // check if module is active
@@ -286,6 +323,10 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
                                 $gL10n->get('DAT_EXPORT_ICAL'), 'database_out.png' );
             }
                         
+            //show csv download
+            $DatesMenu->addItem('admMenuItemCSV', $g_root_path.'/adm_program/modules/dates/dates_csv.php?headline='.$htmlHeadline.'&amp;cat_id='.$getCatId,
+                            'Exportieren (CSV)', 'database_out.png' );
+                                                
             // show print button
             $DatesMenu->addItem('admMenuItemPrint', '',
                             $gL10n->get('LST_PRINT_PREVIEW'), 'print.png', 'window.open(\''.$g_root_path.'/adm_program/modules/dates/dates.php?mode='.$getMode.'&headline='.$htmlHeadline.'&cat_id='.$getCatId.'&date_from='.$dates->getDateFrom().'&date_to='.$dates->getDateTo().'&view_mode=print\', \'_blank\')' );
@@ -306,7 +347,8 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
         <div class="navigationPath">
             <form name="Formular" action="'.$g_root_path.'/adm_program/modules/dates/dates.php" onsubmit="return Datefilter()">
                 <label for="date_from" style="margin-left: 10px;">'.$gL10n->get('SYS_START').':</label>
-                    <input type="text" id="date_from" name="date_from" onchange="javascript:setDateTo();" size="10" maxlength="10" value="'.$dateFromHtmlOutput.'" />
+<!--    Original                                     <input type="text" id="date_from" name="date_from" onchange="javascript:setDateTo();" size="10" maxlength="10" value="'.$dateFromHtmlOutput.'" /> -->
+                    <input type="text" id="date_from" name="date_from" onchange="javascript:setDateTo();" size="10" maxlength="10" value="'.$heute.'" />
                     <a class="iconLink" id="anchor_date_from" href="javascript:calPopup.select(document.getElementById(\'date_from\'),\'anchor_date_from\',\''.$gPreferences['system_date'].'\',\'date_from\',\'date_to\');"><img
                     src="'.THEME_PATH.'/icons/calendar.png" alt="'.$gL10n->get('SYS_SHOW_CALENDAR').'" title="'.$gL10n->get('SYS_SHOW_CALENDAR').'" /></a>
                     <span id="calendardiv" style="position: absolute; visibility: hidden;"></span>
@@ -315,7 +357,8 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
 
                 <label for="date_to">'.$gL10n->get('SYS_END').':</label>
 
-                    <input type="text" id="date_to" name="date_to" size="10" maxlength="10" value="'.$dateToHtmlOutput.'" />
+<!--    Original                 <input type="text" id="date_to" name="date_to" size="10" maxlength="10" value="'.$dateToHtmlOutput.'" /> -->
+                    <input type="text" id="date_to" name="date_to" size="10" maxlength="10" value="31.12.2099" /> 
                     <a class="iconLink" id="anchor_date_to" href="javascript:calPopup.select(document.getElementById(\'date_to\'),\'anchor_date_to\',\''.$gPreferences['system_date'].'\',\'date_from\',\'date_to\');"><img
                     src="'.THEME_PATH.'/icons/calendar.png" alt="'.$gL10n->get('SYS_SHOW_CALENDAR').'" title="'.$gL10n->get('SYS_SHOW_CALENDAR').'" /></a>
                 
@@ -408,6 +451,8 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
             $registerText='';
             $participantIcon='';
             $participantText='';
+            $participantIcon4turnierleiter='';
+            $participantText4turnierleiter='';           
             $mgrpartIcon='';
             $mgrpartText='';
             $dateElements = array();
@@ -416,6 +461,7 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
             $numMembers='';
             $leadersHtml='';
             $locationHtml='';
+      $drbv_locationHtml='';
 
             if ($date->getValue('dat_all_day') == 0)
             {
@@ -425,7 +471,7 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
                 $dateElements[] = array($gL10n->get('SYS_END'), '<strong>'. $date->getValue('dat_end', $gPreferences['system_time']). '</strong> '.$gL10n->get('SYS_CLOCK'));
             }
             // write calendar in output array
-            $dateElements[] = array($gL10n->get('DAT_CALENDAR'), '<strong>'. $date->getValue('cat_name'). '</strong>');
+            // Original        $dateElements[] = array($gL10n->get('DAT_CALENDAR'), '<strong>'. $date->getValue('cat_name'). '</strong>');
 
             if (strlen($date->getValue('dat_location')) > 0)
             {
@@ -439,6 +485,7 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
                         $map_info_count++;
                     }
                 }
+
 
                 if($gPreferences['dates_show_map_link'] == true
                     && $map_info_count > 1)
@@ -488,6 +535,10 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
                 }
 
                 $dateElements[] = array($gL10n->get('DAT_LOCATION'), $locationHtml);
+                $drbv_locationHtml = $locationHtml;
+                
+                // Neue Darstellung
+                $dateElements[] = array($gL10n->get('DAT_CALENDAR'), '<strong>'. $date->getValue('cat_name'). '</strong>');
             }
             elseif($date->getValue('dat_room_id') > 0)
             {
@@ -498,6 +549,8 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
             }
 
             // count participants of the date
+            // rmenken
+            // if($date->getValue('dat_rol_id') > 0)
             if($date->getValue('dat_rol_id') > 0)
             {
                 $leadersHtml = '-';
@@ -515,8 +568,10 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
                     $leadersHtml = '0';
                     $maxMembers = '&infin;';
                 }
+                if(hasRole("Webmaster")){
                 $dateElements[] = array($gL10n->get('SYS_LEADER'), '<strong>'.$leadersHtml.'</strong>');
                 $dateElements[] = array($gL10n->get('SYS_PARTICIPANTS'), $participantsHtml);
+            }
             }
 
             if($date->getValue('dat_rol_id') > 0)
@@ -524,6 +579,9 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
                 // Link for the Agreement in Array
 
                 if($date->getValue('dat_rol_id') > 0)
+                {
+          //rmenken: An/Abmelden nur f?r Startb?cher und Webmaster, Vereine gehen ?ber Teilnehmer zuordnen
+          if(hasRole("Startbuch") == true or hasRole("Webmaster") == true)
                 {
                     if($row['member_date_role'] > 0)
                     {
@@ -554,6 +612,7 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
                         {
                             $registerText = $gL10n->get('DAT_REGISTRATION_NOT_POSSIBLE');
                         }
+            }
                     }
 
                     // Link to participants list
@@ -561,16 +620,36 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
                     {
                         if ($leadersHtml + $numMembers > 0)
                         {
-                            $buttonURL = $g_root_path.'/adm_program/modules/lists/lists_show.php?mode=html&amp;rol_id='.$date->getValue('dat_rol_id');
-                            $participantIcon = '<a href="'.$buttonURL.'"><img src="'. THEME_PATH. '/icons/list.png" alt="'.$gL10n->get('DAT_SHOW_PARTICIPANTS').'" /></a>';
-                            $participantText = '<a href="'.$buttonURL.'">'.$gL10n->get('DAT_SHOW_PARTICIPANTS').'</a>';
+                            $buttonURL = $g_root_path.'/adm_program/modules/lists/lists_show.php?mode=html&ldoff=1&lst_id=11&amp;rol_id='.$date->getValue('dat_rol_id');
+                            //$iframeURL = $g_root_path.'/adm_program/modules/lists/lists_show_iframe.php?mode=html&ldoff=1&lst_id=11&amp;rol_id='.$date->getValue('dat_rol_id');
+                            $iframeURL = 'http://drbv.de/startlisten/teilnehmer.php?file='.$date->getValue('dat_turniernummer');
+                            $participantIcon = '<a href="'.$iframeURL.'" target="_blank"><img src="'. THEME_PATH. '/icons/list.png" alt="'.$gL10n->get('DAT_SHOW_PARTICIPANTS').'" /></a>';
+                            $participantText = '<a href="'.$iframeURL.'" target="_blank">'.$gL10n->get('DAT_SHOW_PARTICIPANTS').'</a>';
+                            //$participantIframe = '[<a href="'.$iframeURL.'" target="_blank">iFrameLink</a>]';
+                            $participantIframe = '[<span class="iconLink"><a class="textTooltip" title="Dieser Link kann auf der Webseite der Veranstalter als I-Frame eingebunden werden und zeigt damit deren aktuelle Teilnehmerliste an." href="#"><img src="'. THEME_PATH. '/icons/info.png"/></a></span><a href="'.$iframeURL.'" target="_blank">iFrameLink</a>]';
+                        }
+                        //rmenken: added list view for turnierleiter/wertungsrichter
+                        if(hasRole("Webmaster") or hasRole("Turnierleiter") or hasRole("Wertungsrichter"))
+                        {
+                            $buttonURL = $g_root_path.'/adm_program/modules/lists/lists_show.php?mode=html&ldoff=1&lst_id=24&amp;rol_id='.$date->getValue('dat_rol_id');
+                            $participantIcon4turnierleiter = '<a href="'.$buttonURL.'"><img src="'. THEME_PATH. '/icons/list.png" alt="Teilnehmer TLP" /></a>';
+                            $participantText4turnierleiter = '<a href="'.$buttonURL.'">Teilnehmer TLP</a>';
+                        }
+            
+                    } else {
+                        if ($leadersHtml + $numMembers > 0)
+                        {
+                            $iframeURL = 'http://drbv.de/startlisten/teilnehmer.php?file='.$date->getValue('dat_turniernummer');
+                            $participantIcon = '<a href="'.$iframeURL.'" target="_blank"><img src="'. THEME_PATH. '/icons/list.png" alt="'.$gL10n->get('DAT_SHOW_PARTICIPANTS').'" /></a>';
+                            $participantText = '<a href="'.$iframeURL.'" target="_blank">'.$gL10n->get('DAT_SHOW_PARTICIPANTS').'</a>';
                         }
                     }
 
                     // Link for managing new participants
+                    // rmenken: redirected to members4dates
                     if($row['mem_leader'] == 1)
                     {
-                        $buttonURL = $g_root_path.'/adm_program/modules/lists/members.php?rol_id='.$date->getValue('dat_rol_id');
+                        $buttonURL = $g_root_path.'/adm_program/modules/lists/members4dates.php?rol_id='.$date->getValue('dat_rol_id');
                         $mgrpartIcon = '<a href="'.$buttonURL.'"><img src="'. THEME_PATH. '/icons/add.png" alt="'.$gL10n->get('DAT_ASSIGN_PARTICIPANTS').'" /></a>';
                         $mgrpartText = '<a href="'.$buttonURL.'">'.$gL10n->get('DAT_ASSIGN_PARTICIPANTS').'</a>';
                     }
@@ -591,10 +670,8 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
                     {
                         $eventDetails.='<tr>';
                     }
-
                     $eventDetails.='<td style="width: 15%">'.$element[0].':</td>
                     <td style="width: 35%">'.$element[1].'</td>';
-
                     if($firstElement)
                     {
                         $firstElement = false;
@@ -605,7 +682,6 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
                         $firstElement = true;
                     }
                 }
-                
                 echo '
                 <div class="boxLayout" id="dat_'.$date->getValue('dat_id').'">
                     <div class="'.$cssClass.'">
@@ -619,12 +695,152 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
                             $icalIcon . $copyIcon . $editIcon . $deleteIcon . '
                         </div>
                     </div>
+                    <div class="boxHead2">
+          <div class="boxHeadLeft">';
+            // Oberle
+            // Zeige Meldeschluss nur bei nationalen Turnieren, ausser Breitensport     
+            // rmenken
+            $daysToCheckindeadline = getDaysToCheckindeadline( $date, $gPreferences );
+            $isCheckinPossible = isCheckinPossible( $date, $gPreferences );
+      
+            if ($date->getValue('dat_cat_id') == 31 && $date->getValue('dat_tform') != "Breitensportwettbewerb")
+            {
+              if( $daysToCheckindeadline < 0 ) {
+                $msg = "Meldeschluss erreicht.";
+              } elseif( $daysToCheckindeadline == 0 ) {
+                $msg = "Meldeschluss ist heute!";
+              } elseif( $daysToCheckindeadline == 1 ) {
+                $msg = "Meldeschluss ist in $daysToCheckindeadline Tag!";
+              } elseif( $daysToCheckindeadline > 1 ) {        
+                $msg = "Meldeschluss ist in $daysToCheckindeadline Tagen.";
+              }                   
+                          echo '<div style="font-style:italic;color:red;">'. $msg .'</div>';
+                        }
+          echo '  
+          </div>
+          <div class="boxHeadRight">
+            '.$date->getValue('cat_name').'
+          </div>
+                    </div>';
 
+                    //<div class="boxBody">
+                    //    <table style="width: 100%; border-width: 0px;">' . $eventDetails . '
+                    //    </table>
+        echo '
                     <div class="boxBody">
-                        <table style="width: 100%; border-width: 0px;">' . $eventDetails . '
-                        </table>
-                        <div class="date_description" style="clear: left;">' . $date->getValue('dat_description') . '</div>
+        <strong>Wo:</strong> '.$drbv_locationHtml.' ';
+  
+  if ($date->getValue('dat_cat_id') == 35 and $date->getValue('dat_country')) {echo'<i>('.$date->getValue('dat_country').')</i>';}
+  echo'<br>
+        <strong>Ausrichter / Verein:</strong> '.$date->getValue('dat_verein').'<br>
+        <strong>Verantwortlicher:</strong> '.$date->getValue('dat_ansprechpartner').'';
+        
+     echo '
+      <table style="width: 100%; border:0px solid #C0C0C0;" cellpadding="0px" cellspacing="0px">
+             <tr>
+               <td style="width: 50%; vertical-align:top;">
+               <ul style="list-style-type:none">';
+           if ($date->getValue('dat_ansprechpartner_anschrift')) {echo'<li><strong>Anschrift:</strong> '.$date->getValue('dat_ansprechpartner_anschrift').'</li>';}            
+           if ($date->getValue('dat_tel')) {echo'<li><strong>Telefon:</strong> '.$date->getValue('dat_tel').'</li>';}
+           if ($date->getValue('dat_handy')) {echo'<li><strong>Mobil:</strong> '.$date->getValue('dat_handy').'</li>';}
+           if ($date->getValue('dat_fax')) {echo'<li><strong>Fax:</strong> '.$date->getValue('dat_fax').'</li>';}
+               echo' </ul>
+             </td>
+               <td style="width: 50%; vertical-align:top;">
+            <ul style="list-style-type:none">';
+              if ($date->getValue('dat_mail')) {echo'<li><strong>Mail:</strong> <a href="mailto:'.$date->getValue('dat_mail').'">'.$date->getValue('dat_mail').'</a></li>';}
+              if ($date->getValue('dat_link')) {echo'<li><strong>Link:</strong> <a href="http://'.$date->getValue('dat_link').'" target="_blank">'.$date->getValue('dat_link').'</a></li>';}
+            echo' </ul>
+               </td>
+             </tr>
+           </table>';     
+             
+         //print only if cat_id is Turnierkalender National(id=31) or International(id=35)
+         if ($date->getValue('dat_cat_id') == 31 or $date->getValue('dat_cat_id') == 35) {
+             echo '
+         <table style="width: 100%; border:0px solid #C0C0C0;" cellpadding="0px" cellspacing="0px">
+         <tr>
+           <td style="width: 50%">
+             <b>Startklassen:</b>
+               <ul style="list-style-type:none">
+           <li>Rock&prime;n&prime;Roll: <b>';
+             if ($date->getValue('dat_sk_s') == 1) {echo 'S';}
+             if ($date->getValue('dat_sk_j') == 1) {echo ' J';}
+             if ($date->getValue('dat_sk_c') == 1) {echo ' C';}
+             if ($date->getValue('dat_sk_b') == 1) {echo ' B';}
+             if ($date->getValue('dat_sk_a') == 1) {echo ' A';}   
+           echo '
+           </b></li>
+           <li>Boogie-Woogie: <b>';
+             if ($date->getValue('dat_sk_bwh') == 1) {echo 'MA';}
+             if ($date->getValue('dat_sk_bwo') == 1) {echo ' SA';}
+             if ($date->getValue('dat_sk_bwh_b') == 1) {echo ' MB';}
+             if ($date->getValue('dat_sk_bwo_b') == 1) {echo ' SB';}
+             if ($date->getValue('dat_sk_bwj') == 1) {echo ' Jugend';}        
+           echo '
+           </b></li>
+           <li>Formationen: <b>';
+             if ($date->getValue('dat_sk_frm') == 1) {echo 'Master RR';}
+             if ($date->getValue('dat_sk_frl') == 1) {echo ' Lady RR';}
+             if ($date->getValue('dat_sk_frg') == 1) {echo ' Girl RR';}
+             if ($date->getValue('dat_sk_frj') == 1) {echo ' Jugend RR';}
+             if ($date->getValue('dat_sk_frs') == 1) {echo ' Showteam RR';}      
+             if ($date->getValue('dat_sk_fbm') == 1) {echo ' Master BW';}        
+           echo '
+           </b></li>';    
+             //if ($date->getValue('dat_sk_bsp') == 1) {
+             // echo '<li><b>Breitensport</b></li>';
+             //}       
+           echo '
+               </ul>    
+           </td>
+           <td style="width: 50%">
+             <b>Turnierinformation:</b>
+               <ul style="list-style-type:none">
+           <li>Turnierleiter: <b>'.$date->getValue('dat_tl').'</b>';
+                echo '
+           </li>
+           <li>Turnierform: <b>'.$date->getValue('dat_tform').'</b>';
+           if($date->getValue('dat_tform') != 'Nord-Cup' && 
+              $date->getValue('dat_tform') != 'Süd-Cup' ){
+             if($date->getValue('dat_tform_cupserie') != ''){
+               echo '&nbsp;('.$date->getValue('dat_tform_cupserie').')';
+             }                
+           } 
+           echo '
+           </li>
+           <li>Turnierart: <b>'.$date->getValue('dat_tform_international').'</b>';
+           echo '
+           </li>
+               </ul>    
+           
+           </td>
+         </tr>
+         </table>';
+           }        
+
+         echo '
+     </div>';
+           
+     if ($date->getValue('dat_notiz'))
+     {
+       echo '<div class="boxBody"><b>Bemerkung:</b><br>' . $date->getValue('dat_notiz') . '</div>';
+     }              
+     echo'      
+     <div class="boxBody2">';
+     
+// Bermerkung nur Geschäftsstelle
+   if (hasRole("Webmaster") or hasRole("Geschäftsstelle"))
+   {
+         
+     if ($date->getValue('dat_description'))
+     {
+             echo '<b>DRBV interne Notiz:</b><br>' . $date->getValue('dat_description') . '';
+     }
+   }
+     echo '
                         <div>';
+     
                         if ($registerText)
                         {
                             echo '
@@ -632,13 +848,30 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
                                 ' . $registerIcon .' '. $registerText . '
                             </span>&nbsp;';
                         }
-                        if ($participantText)
+                        if ($participantText){
+                          if($gValidLogin)
                         {
+                            echo '
+                            <span class="iconTextLink">
+                                ' . $participantIcon .' '. $participantText . '  - ' . $participantIframe . '
+                            </span>&nbsp;';
+                          } else {
                             echo '
                             <span class="iconTextLink">
                                 ' . $participantIcon .' '. $participantText . '
                             </span>&nbsp;';
                         }
+                        }
+                        //rmenken: add link to see list for turnierleiter
+                        if ($participantText4turnierleiter)
+                        {
+                            echo '
+                            <span class="iconTextLink">
+                                ' . $participantIcon4turnierleiter .' '. $participantText4turnierleiter . '
+                            </span>&nbsp;';
+                        }            
+         // rmenken:
+         if ($isCheckinPossible or hasRole("Webmaster") or hasRole("Turnierleiter")){
                         if ($mgrpartText)
                         {
                             echo '
@@ -646,6 +879,14 @@ if($getViewMode == 'html'  || $getViewMode == 'compact')
                                 ' . $mgrpartIcon .' '. $mgrpartText . '
                             </span>';
                         }
+         } else {
+      // if turnierkalender national
+            if ($date->getValue('dat_cat_id') == 31) {
+              echo '
+              <span style="color:red;text-decoration:blink;"> An- und Abmeldung nicht mehr möglich!</span>';
+      }           
+         }  
+            
                         echo '</div>';
                         // show information about user who created the recordset and changed it
                         echo admFuncShowCreateChangeInfoByName($row['create_name'], $date->getValue('dat_timestamp_create'), 
@@ -743,6 +984,7 @@ else
     // Define options for selectbox
     if($gValidLogin)
     {
+        //$selectBoxEntries = array($gL10n->get('SYS_OVERVIEW'), $gL10n->get('SYS_DESCRIPTION'), $gL10n->get('SYS_PARTICIPANTS'),'.csv-Export');
         $selectBoxEntries = array($gL10n->get('SYS_OVERVIEW'), $gL10n->get('SYS_DESCRIPTION'), $gL10n->get('SYS_PARTICIPANTS'));
     }
     else
@@ -772,8 +1014,8 @@ else
                 <tfoot>
                     <tr>
                         <td colspan="9" style="text-align: right;">
-                            <i>provided by Admidio</i>
-                            <i style="font-size: 0.6em;">'.date($gPreferences['system_date'].' '.$gPreferences['system_time']).'</i>
+                            <i style="font-size: 0.8em;">Deutscher Rock\'n\'Roll und Boogie-Woogie Verband e.V. - </i>
+                            <i style="font-size: 0.8em;">'.date($gPreferences['system_date'].' '.$gPreferences['system_time']).'</i>
                         </td>
                     </tr>
                 </tfoot>
@@ -794,15 +1036,13 @@ else
         {  
             // define header of columns
             echo'<tr>
-                    <th>' . $gL10n->get('SYS_START'). '</th>
-                    <th>' . $gL10n->get('SYS_END'). '</th>
-                    <th>' . $gL10n->get('SYS_TIME_FROM'). '</th>
-                    <th>' . $gL10n->get('SYS_TIME_TO'). '</th>
+                    <th>' . $gL10n->get('SYS_START'). '<br />' . $gL10n->get('SYS_END'). '</th>
                     <th>' . $gL10n->get('DAT_DATE'). '</th>
                     <th>' . $gL10n->get('SYS_LOCATION'). '</th>
-                    <th>' . $gL10n->get('DAT_ROOM_INFORMATIONS'). '</th>
-                    <th>' . $gL10n->get('SYS_LEADER'). '</th>
-                    <th>' . $gL10n->get('SYS_PARTICIPANTS'). '</th>
+                    <th>Verein</th>
+                    <th>Ansprechpartner</th>
+                    <th>E-Mail</th>
+                    <th>Startklassen</th>                                                        
                 </tr>';
          
             // Write data to table body
@@ -814,9 +1054,19 @@ else
                 $dateBegin = $objDateBegin->format($gPreferences['system_date']);
                 $dateStartTime = $objDateBegin->format($gPreferences['system_time']);
                 
+                $a=substr($row['dat_end'],11);
+             if($a != "00:00:00")
+               {
                 $objDateEnd = new DateTime ($row['dat_end']);
                 $dateEnd = $objDateEnd->format($gPreferences['system_date']);
                 $dateEndTime = $objDateEnd->format($gPreferences['system_time']);
+               }
+              else
+               {
+                 $b = strtotime($row['dat_end']);              
+                 $b = $b - 10;
+                 $dateEnd = date("d.m.Y",$b);
+               }
                 
                 // Change colors of each second row for visibilty
                 // Change css if date is highlighted
@@ -830,37 +1080,46 @@ else
                 }
                 
                 echo '<tr class="'.$classValue.'">
-                        <td>' . $dateBegin . '</td>
-                        <td>' . $dateEnd . '</td>
-                        <td>' . $dateStartTime . '</td>
-                        <td>' . $dateEndTime . '</td>
+                        <td>' . $dateBegin . '<br />' . $dateEnd . '</td>
                         <td style="text-align: left;">' . $row['dat_headline'] . '</td>
                         <td style="text-align: left;">' . $row['dat_location'] . '</td>
-                        <td>';
-                                if(isset($row['room_name']))
+                        <td style="text-align: left;">' . $row['dat_verein'] . '</td>
+                        <td style="text-align: left;">' . $row['dat_ansprechpartner'] . '</td>
+            <td style="text-align: left;">' . $row['dat_mail'] . '</td>';
+            
+                   echo'<td>';            
+
+            if($row['dat_sk_s'] == 1 || $row['dat_sk_j'] == 1 || $row['dat_sk_c'] == 1 || $row['dat_sk_b'] == 1 || $row['dat_sk_a'] == 1)
                                 {
-                                    echo $row['room_name'];
+               echo'Rock´n´Roll: ';
+               if ($row['dat_sk_s'] == 1) {echo 'S';}
+               if ($row['dat_sk_j'] == 1) {echo ' J';}
+               if ($row['dat_sk_c'] == 1) {echo ' C';}
+               if ($row['dat_sk_b'] == 1) {echo ' B';}
+               if ($row['dat_sk_a'] == 1) {echo ' A';}
+               echo'<br>';
                                 }
-                echo'</td>  
-                        <td style="text-align: center;">';
-                                if(isset($row['dat_num_leaders']) && $row['dat_num_leaders']!= 0)
+            if($row['dat_sk_bwh'] == 1 || $row['dat_sk_bwo'] == 1 || $row['dat_sk_bwj'] == 1)
                                 {
-                                    echo $row['dat_num_leaders'];
+               echo'Boogie Woogie: ';
+               if ($row['dat_sk_bwh'] == 1) {echo 'Main';}
+               if ($row['dat_sk_bwo'] == 1) {echo ' Senior';}
+               if ($row['dat_sk_bwj'] == 1) {echo ' Junior';} 
+               echo'<br>';
                                 }
-                echo'</td>
-                        <td style="text-align: center;">';
-                                // Show number of participants of date
-                                if(isset($row['dat_num_members']) && $row['dat_max_members'] == 0)
+            if($row['dat_sk_frm'] == 1 || $row['dat_sk_frl'] == 1 || $row['dat_sk_frg'] == 1 || $row['dat_sk_frj'] == 1 || $row['dat_sk_frs'] == 1 || $row['dat_sk_fbm'] == 1)
                                 {
-                                    echo $row['dat_num_members'];
-                                }
-                                // If date has limit for assignment also show the value    
-                                if(isset($row['dat_num_members']) && $row['dat_max_members'] != 0)
-                                {
-                                    echo $row['dat_num_members'].' '.'('.$row['dat_max_members'].')';
+               echo'Formationen: ';    
+               if ($row['dat_sk_frm'] == 1) {echo 'Master RR';}
+               if ($row['dat_sk_frl'] == 1) {echo ' Lady RR';}
+               if ($row['dat_sk_frg'] == 1) {echo ' Girl RR';}
+               if ($row['dat_sk_frj'] == 1) {echo ' Jugend RR';}
+               if ($row['dat_sk_frs'] == 1) {echo ' Showteam RR';}      
+               if ($row['dat_sk_fbm'] == 1) {echo ' Master BW';}            
                                 }
 
                 echo'</td>';
+               
                 $numElement++;
                 
             }   // end foreach
@@ -872,8 +1131,7 @@ else
                 echo'<tr>
                         <th>' . $gL10n->get('SYS_START'). '</th>
                         <th>' . $gL10n->get('SYS_END'). '</th>
-                        <th>' . $gL10n->get('SYS_TIME_FROM'). '</th>
-                        <th>' . $gL10n->get('SYS_TIME_TO'). '</th>
+                        <th>Uhrzeit von-bis</th>
                         <th>' . $gL10n->get('DAT_DATE'). '</th>
                         <th>' . $gL10n->get('SYS_DESCRIPTION'). '</th>
                     </tr>';
@@ -904,8 +1162,7 @@ else
                     echo '<tr class="'.$classValue.'">
                             <td>' . $dateBegin . '</td>
                             <td>' . $dateEnd . '</td>
-                            <td>' . $dateStartTime . '</td>
-                            <td>' . $dateEndTime . '</td>
+                            <td>' . $dateStartTime . ' - ' . $dateEndTime . '</td>
                             <td style="text-align: left;">' . $row['dat_headline'] . '</td>
                             <td style="text-align: left;">'.  $row['dat_description'] = preg_replace('/<[^>]*>/', '', $row['dat_description']) .'</td>
                         </tr>';
@@ -921,10 +1178,10 @@ else
                         <tr>
                             <th style="text-align: left;">' . $gL10n->get('SYS_START'). '<br />
                                 ' . $gL10n->get('SYS_END'). '</th>
-                            <th style="text-align: left;">' . $gL10n->get('SYS_TIME_FROM'). '<br />
-                                ' . $gL10n->get('SYS_TIME_TO'). '</th>
+                            <th style="text-align: left;"> Uhrzeit <br />von-bis</th>
                             <th>' . $gL10n->get('DAT_DATE'). '</th>
                             <th>' . $gL10n->get('SYS_PARTICIPANTS'). '</th>
+                            <th>Anzahl</th>
                         </tr>';
                         
                         $numElement = 1;
@@ -979,12 +1236,7 @@ else
                                                         $line_break = '</td></tr>';
                                                     }
                                                         
-                                                    // Leaders are shown highlighted
-                                                    if($memberDate['leader'] != 0)
-                                                    {
-                                                        echo '<td style="text-align: left;"><strong>'.$memberDate['surname'].' '.$memberDate['firstname'].'</strong>'.';'.$line_break.'';
-                                                    }
-                                                    else
+ if($memberDate['leader'] == 0)                                                    
                                                     {
                                                             echo '<td style="text-align: left;">', $memberDate['surname'],' ',$memberDate['firstname'],';', $line_break.'';
                                                     }
@@ -994,14 +1246,35 @@ else
                                                 echo'</table>';
                                             }
                                             
-                            echo'</td></tr>';
+                            echo'</td>
+                        <td style="text-align: center;">';
+                                // Show number of participants of date
+                                if(isset($row['dat_num_members']) && $row['dat_max_members'] == 0)
+                                {
+                                    echo $row['dat_num_members'];
+                                }
+                                // If date has limit for assignment also show the value    
+                                if(isset($row['dat_num_members']) && $row['dat_max_members'] != 0)
+                                {
+                                    echo $row['dat_num_members'].' '.'('.$row['dat_max_members'].')';
+                                }                            
+                            echo'</tr></tr>';
                             $numElement++;
                         }           
                 echo'</tbody>';
+                
+ // CIV-Export               
+                echo'<tbody id="style3">'; 
+         
+                echo'<tr><td><h1>CSV-Export</h1></td></tr>';
+                echo'<tr><td><a href="./dates_csv.php" target = "_blank">CSV-Datei erzeugen</a></td></tr>';              
+        
+                echo'</tbody>';                                              
             }
         }
         echo'</table>
             </div>
     </body>';
+      
 }
 ?>

@@ -27,7 +27,6 @@ else
     define('BETA_VERSION_TEXT', '');
 }
 
-
 // different paths
 define('SERVER_PATH', substr(__FILE__, 0, strpos(__FILE__, 'adm_program')-1));
 if(strpos($_SERVER['SCRIPT_FILENAME'], "/adm_") !== false && isset($g_root_path) == true)

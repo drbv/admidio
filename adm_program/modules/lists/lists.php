@@ -258,10 +258,16 @@ foreach($listsResult as $row)
                     }
                     
                     // Link zu den eigenen Listen setzen
-                    echo '</optgroup>
+                    echo '</optgroup>';
+          //rmenken: eigene Listen nur für Webmaster
+          if($gCurrentUser->isWebmaster())
+                    {
+            echo '
                     <optgroup label="'.$gL10n->get('LST_CONFIGURATION').'">
                         <option value="mylist">'.$gL10n->get('LST_CREATE_OWN_LIST').'</option>
-                    </optgroup>
+                      </optgroup>';
+          }
+          echo'
                 </select>';
             }
             else
@@ -329,7 +335,7 @@ foreach($listsResult as $row)
                 </dl>
             </li>';
         }
-        //Teinehmer
+        //Teilnehmer
         echo '
         <li>
             <dl>
@@ -339,6 +345,8 @@ foreach($listsResult as $row)
                     {
                         echo '&nbsp;'.$gL10n->get('LST_MAX', $role->getValue('rol_max_members'));
                     }
+                    //rmenken: show ehemalige only valid for webmaster
+                    if($gCurrentUser->isWebmaster()){
                     if($getActiveRole && $row['num_former'] > 0)
                     {
                         // Anzahl Ehemaliger anzeigen
@@ -353,6 +361,7 @@ foreach($listsResult as $row)
                         
                         echo '&nbsp;&nbsp;(<a href="'.$g_root_path.'/adm_program/modules/lists/lists_show.php?mode=html&amp;rol_id='. $role->getValue('rol_id'). '&amp;show_members=1">'.$row['num_former'].' '.$textFormerMembers.'</a>) ';
                     }
+        }
                 echo '</dd>
             </dl>
         </li>';

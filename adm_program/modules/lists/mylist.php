@@ -127,7 +127,7 @@ $gLayout['header'] = '
                 }
                 
                 // bei gespeicherten Listen das entsprechende Profilfeld selektieren
-                // und den Feldnamen dem Listenarray hinzufügen
+                // und den Feldnamen dem Listenarray hinzufï¿½gen
                 if(arr_default_fields[fieldNumberIntern])
                 {
                     if(arr_user_fields[counter]["usf_id"] == arr_default_fields[fieldNumberIntern]["usf_id"])
@@ -206,6 +206,9 @@ $gLayout['header'] = '
         
             foreach($gProfileFields->mProfileFields as $field)
             {    
+              //rmenken: Akrolisten hier rausgenommen, da der generierte javascript code
+              //         sonst einen stack ueberlauf verursacht! 
+              if($field->getValue('cat_name') != 'Akrobatiklisten'){ 
 				// at the end of category master data save positions for loginname and username
 				// they will be added after profile fields loop
                 if($oldCategoryNameIntern == 'MASTER_DATA'
@@ -213,6 +216,9 @@ $gLayout['header'] = '
                 {
 					$posEndOfMasterData = $i;
 					$i = $i + 2;
+          //rmenken: patch zu Version V3.2.10, damit Spaltenauswahl auch ohne das Recht Profildaten aller Nutzer
+          //         bearbeiten funktioniert!        
+          $oldCategoryNameIntern = $field->getValue('cat_name_intern');        
                 }
                 
 				// add profile field to user field array
@@ -247,7 +253,8 @@ $gLayout['header'] = '
                     $oldCategoryNameIntern = $field->getValue('cat_name_intern');
                     $i++;
                 }
-            }       
+            }//end if
+          }//end foreach      
 
 			// Add loginname and photo at the end of category master data
 			// add new category with start and end date of role membership

@@ -23,6 +23,15 @@
 	margin:			  20px;
 }
 
+.bodyPrintResult {
+  color:            #000000;
+  font-family:      courier;
+  font-size:        10pt;
+  background-color: #ffffff;
+  text-align:       left;
+  margin:           20px;
+}
+
 .tableListPrint {
     width:            270mm;
     background-color: #ffffff;
@@ -171,4 +180,63 @@
 .tableDateList td {
 	font-size: .9em;
 	text-align: center;
+}
+/* Settings for wertungen */
+.formLayout {
+    width:              850px;
+    border:             1px solid #000000;
+    margin:             auto;
+    margin-top:         30px;
+}
+
+.formHead {
+    color:              #000000;
+    background-color:   #ffffff;
+    font-size:          12pt;
+    font-weight:        bold;
+    letter-spacing:     0.2em;
+    border-bottom:      1px solid #000000;
+    padding:            3px 15px 0px 15px;
+    text-align:         center;
+}
+
+.formBody {
+    color:              #000000;
+    background-color:   #ffffff;
+    padding:            10px 15px 10px 15px;
+    text-align:         center;
+}
+
+.formBody hr {
+    border:             1px solid #000000;
+    width:              100%;
+    margin-top:         10px;
+    margin-bottom:      10px;
+}
+
+/* Table Layout ProfileWertungErgebnis */
+table.prfl_wrtg_rgbns {
+  border:0;
+  background-color: #ffffff;
+}
+
+table.prfl_wrtg_rgbns tr {
+  background-color: #ffffff;
+}
+
+table.prfl_wrtg_rgbns td {
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+}
+
+table.prfl_wrtg_rgbns td.cellcol1 {
+  background-color: #ffffff;
+}
+
+table.prfl_wrtg_rgbns td.cellcol2 {
+  background-color: #ffffff;
+}
+
+table.prfl_wrtg_rgbns td.cellcol3 {
+  background-color: #ffffff;
 }

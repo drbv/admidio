@@ -115,9 +115,6 @@ echo '
         echo '<div class="smallFontSize" style="margin-top: 5px;">
             <a href="'.$mail_link.'">'.$gL10n->get('SYS_FORGOT_MY_PASSWORD').'</a>
         </div>
-        <div class="smallFontSize" style="margin-top: 20px;">
-            Powered by <a href="http://www.admidio.org">Admidio</a>
-        </div>
     </div>
 </div>
 </form>';

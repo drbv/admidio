@@ -69,6 +69,7 @@ if( strlen($showOption) > 0 )
     switch((string)$showOption)
     {
         case 'SYS_COMMON':
+        case 'DRBV_SETTINGS':
         case 'ORG_ORGANIZATION_REGIONAL_SETTINGS':
         case 'SYS_REGISTRATION':
         case 'SYS_SYSTEM_MAILS':
@@ -304,6 +305,177 @@ echo '
                 </div>
             </div>';
             
+            /**************************************************************************************/
+            // DRBV settings
+            /**************************************************************************************/
+            //HowTo: Add Item here: e.g. drbv_disable_akro_check
+            //       Add drbv_disable_akro_check to organization_functions.php, too
+            //       Use $gPreferences['drbv_disable_akro_check'] == ?, where needed
+            echo '<h3 id="DRBV_SETTINGS" class="iconTextLink" >
+                <a href="#"><img src="'.THEME_PATH.'/icons/favicon.png" alt="DRBV Einstellungen" title="DRBV Einstellungen" /></a>
+                <a href="#">DRBV Einstellungen</a>
+            </h3>
+            <div class="groupBoxBody" style="display: none;">
+                <ul class="formFieldList">
+                    <li>
+                        <dl>
+                            <dt><label for="drbv_disable_akro_check">Akrobatikchecks Ausschalten:</label></dt>
+                            <dd>
+                                <input type="checkbox" id="drbv_disable_akro_check" name="drbv_disable_akro_check" ';
+                                if(isset($form_values['drbv_disable_akro_check']) && $form_values['drbv_disable_akro_check'] == 1)
+                                {
+                                    echo ' checked="checked" ';
+                                }
+                                echo ' value="1" />
+                            </dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Akrobatik Checks für Webmaster deaktivieren. Wenn die Checks aktiv sind kann das Paarprofil mit Akrobatiken u.U. sonst nicht gespeichert werden!</li>
+                    <li>
+                        <dl>
+                            <dt><label for="drbv_admin_pwd">Admin Passwort:</label></dt>
+                            <dd><input type="text" id="drbv_admin_pwd" name="drbv_admin_pwd" style="width: 150px;" maxlength="12" value="'. $form_values['drbv_admin_pwd']. '" /></dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Admin Passwort setzen das zum debuggen der Nutzer verwendet wird: adminpwd.loginnamenutzer</li>
+                    <li>
+                        <dl>
+                            <dt><label for="txt_folder_id">Folder-IDs:</label></dt>
+                            <dd><input type="text" id="txt_folder_id" name="txt_folder_id" style="width: 150px;" maxlength="40" value="'. $form_values['txt_folder_id']. '" /> ; trennt Einträge</dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Folder-IDs für Turnierergebnissfolders im Downloadmodul. TXT Dateien werden dann angezeigt und nicht nur als Download verlinkt.</li>
+                    <li>
+                        <dl>
+                            <dt><label for="drbv_set_wr_lizenz_nr">Wertungsrichter Lizenz setzen:</label></dt>
+                            <dd><input type="text" id="drbv_set_wr_lizenz_nr" name="drbv_set_wr_lizenz_nr" style="width: 150px;" maxlength="4" value="'. $form_values['drbv_set_wr_lizenz_nr']. '" /></dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Wertungsrichter Lizenz setzen, dessen Wertungsergebnisse debugged werden sollen.</li>
+                    <li>
+                        <dl>
+                            <dt><label for="drbv_set_verein_id">Vereins-ID setzen:</label></dt>
+                            <dd><input type="text" id="drbv_set_verein_id" name="drbv_set_verein_id" style="width: 150px;" maxlength="8" value="'. $form_values['drbv_set_verein_id']. '" /></dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Vereins-ID setzen, um z.B. im Formular Gütesiegel einen anderen Verein als den Default=14 zu betrachten.</li>                    
+                </ul>
+                <br />
+                <div class="formSubmit">    
+                    <button id="btnSave" type="submit"><img src="'. THEME_PATH. '/icons/disk.png" alt="'.$gL10n->get('SYS_SAVE').'" />&nbsp;'.$gL10n->get('SYS_SAVE').'</button>
+                </div>
+            </div>';
+
+            /**************************************************************************************/
+            // DRBV ranglisten
+            /**************************************************************************************/
+            //HowTo: Add Item here: e.g. drbv_disable_akro_check
+            //       Add drbv_disable_akro_check to organization_functions.php, too
+            //       Use $gPreferences['drbv_disable_akro_check'] == ?, where needed
+            echo '<h3 id="DRBV_RANGLISTEN" class="iconTextLink" >
+                <a href="#"><img src="'.THEME_PATH.'/icons/favicon.png" alt="DRBV RANGLISTEN" title="DRBV Ranglisten" /></a>
+                <a href="#">DRBV Ranglisten</a>
+            </h3>
+            <div class="groupBoxBody" style="display: none;">
+                <ul class="formFieldList">
+                    <li>
+                        <dl>
+                            <dt><label for="txt_tanzpktansicht">User-Ids f&uuml;r Punktansicht:</label></dt>
+                            <dd><input type="text" id="txt_tanzpktansicht" name="txt_tanzpktansicht" style="width: 200px;" maxlength="70" value="'. $form_values['txt_tanzpktansicht']. '" /> ; trennt Einträge</dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Benutzer (user-ID) die bei der Ansicht die erzielten Tanzpunkte angezeigt bekommen.</li>
+                    <li>
+                        <dl>
+                            <dt><label for="txt_nc_trn">Nord-Cup-Turniernummern:</label></dt>
+                            <dd><input type="text" id="txt_nc_trn" name="txt_nc_trn" style="width: 200px;" maxlength="70" value="'. $form_values['txt_nc_trn']. '" /> ; trennt Einträge</dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Turniernummern aller Nord-Cups einer Saison zur Ranglistenberechnung. Bitte nach Datum sortiert eingeben (Erstes Turnier = Letztes in der Liste).</li>
+                    <li>
+                        <dl>
+                            <dt><label for="txt_nc_trn">Nord-Cup NDM Turniernummer:</label></dt>
+                            <dd><input type="text" id="txt_nc_ndm" name="txt_nc_ndm" style="width: 150px;" maxlength="70" value="'. $form_values['txt_nc_ndm']. '" /></dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Turniernummer Nord-Cup Abschlussturnier NDM.</li>
+                    <li>
+                        <dl>
+                            <dt><label for="txt_sc_trn">Süd-Cup-Turniernummern:</label></dt>
+                            <dd><input type="text" id="txt_sc_trn" name="txt_sc_trn" style="width: 200px;" maxlength="70" value="'. $form_values['txt_sc_trn']. '" /> ; trennt Einträge</dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Turniernummern aller Süd-Cups einer Saison zur Ranglistenberechnung. Bitte nach Datum sortiert eingeben (Erstes Turnier = Letztes in der Liste).</li>
+                    <li>
+                        <dl>
+                            <dt><label for="txt_sc_sdm">Süd-Cup Turniernummer SDM:</label></dt>
+                            <dd><input type="text" id="txt_sc_sdm" name="txt_sc_sdm" style="width: 150px;" maxlength="70" value="'. $form_values['txt_sc_sdm']. '" /></dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Turniernummer Süd-Cup Abschlussturnier SDM.</li>
+                    <li>
+                        <dl>
+                            <dt><label for="txt_hinweis">Hinweise zu den Ranglisten:</label></dt>
+                            <dd><input type="text" id="txt_hinweis" name="txt_hinweis" style="width: 200px;" maxlength="254" value="'. $form_values['txt_hinweis']. '" /> ; linefeed</dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Hinweise zu den Ranglisten werden am Ende der Userauswahl im Frontend gezeigt.</li>
+                    <li>
+                        <dl>
+                            <dt><label for="txt_quote_dcgp">Teilnehmerquote DC/GP</label></dt>
+                            <dd><input type="text" id="txt_quote_dcgp" name="txt_quote_dcgp" style="width: 150px;" maxlength="70" value="'. $form_values['txt_quote_dcgp']. '" /> ; trennt Einträge</dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Teilnehmerquote f&uuml;r DC&GPvD. Bitte in der Reihenfolge A;B;C;J;S Klasse eintragen.</li>
+                    <li>
+                        <dl>
+                            <dt><label for="txt_modus_dcgp">Austragungsmodus DC/GP</label></dt>
+                            <dd><input type="text" id="txt_modus_dcgp" name="txt_modus_dcgp" style="width: 150px;" maxlength="70" value="'. $form_values['txt_modus_dcgp']. '" /> ; trennt Einträge</dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Austragungsmodus f&uuml;r DC&GPvD. Bitte in der Reihenfolge A;B;C;J;S Klasse eintragen mit folgenden Bezeichnern: HF mit Halbfinale, VR nur mit Vorrunde.</li>
+                    <li>
+                        <dl>
+                            <dt><label for="txt_intein">Internationale Eins&auml;tze</label></dt>
+                            <dd><input type="text" id="txt_intein" name="txt_intein" style="width: 200px;" maxlength="200" value="'. $form_values['txt_intein']. '" /> ; trennt Einträge</dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">F&uuml;r internationale Eins&auml;tze werden die Punkte des drittplatzierten gew&auml;hrt. Eingabe nach Muster: TurniernummerX-StBuchNrY,StBuchNrZ,...;TurniernummerX-StBuchNrY,StBuchNrZ usw.</li>
+                    <li>
+                        <dl>
+                            <dt><label for="txt_disqual">Paare an das Listenende setzen</label></dt>
+                            <dd><input type="text" id="txt_disqual" name="txt_disqual" style="width: 200px;" maxlength="200" value="'. $form_values['txt_disqual']. '" /> ; trennt Einträge</dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Hier Startbuchnummern eintragen, deren Ranglistenpunkte genullt und somit an das Listenende gesetzt werden.</li>
+                    <li>
+                        <dl>
+                            <dt><label for="txt_tatdat">Datum Turn- und Athletiktest</label></dt>
+                            <dd><input type="text" id="txt_tatdat" name="txt_tatdat" style="width: 200px;" maxlength="200" value="'. $form_values['txt_tatdat']. '" /></dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Hier das Datum eintragen, ab dem ein nicht gesetztes TaT-Flag das Paar an das Listenende setzt.</li>
+                    <li>
+                        <dl>
+                            <dt><label for="txt_gpdat">Turniernummer DC&GPvD</label></dt>
+                            <dd><input type="text" id="txt_gpdat" name="txt_gpdat" style="width: 200px;" maxlength="200" value="'. $form_values['txt_gpdat']. '" /> ; trennt Einträge</dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Turniernummern f&uuml;r DC/GPvD (Ranglistenturniere). Bitte nach Datum sortiert eingeben (Erstes Turnier = Letztes in der Liste).</li>
+                    <li>
+                        <dl>
+                            <dt><label for="txt_dmquote">Quoten zur DM</label></dt>
+                            <dd><input type="text" id="txt_dmquote" name="txt_dmquote" style="width: 200px;" maxlength="200" value="'. $form_values['txt_dmquote']. '" /> ; trennt Einträge</dd>
+                        </dl>
+                    </li>
+                    <li class="smallFontSize">Quoten f&uuml;r die Deutsche Meisterschaft. Bitte in der Reihenfolge A;B;C;J;S Klasse eintragen.</li>
+                  </ul>
+                <br />
+                <div class="formSubmit">    
+                    <button id="btnSave" type="submit"><img src="'. THEME_PATH. '/icons/disk.png" alt="'.$gL10n->get('SYS_SAVE').'" />&nbsp;'.$gL10n->get('SYS_SAVE').'</button>
+                </div>
+            </div>';
+  
             /**************************************************************************************/
             // Organization and regional settings
             /**************************************************************************************/

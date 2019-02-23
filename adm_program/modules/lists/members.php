@@ -26,6 +26,8 @@ $gNavigation->addUrl(CURRENT_URL);
 
 // create object of the commited role
 $role = new TableRoles($gDb, $getRoleId);
+// rmenken
+$rm_my_role = $getRoleId;
 
 // roles of other organizations can't be edited
 if($role->getValue('cat_org_id') != $gCurrentOrganization->getValue('org_id') && $role->getValue('cat_org_id') > 0)
@@ -46,8 +48,10 @@ $gLayout['header'] ='
 <script type="text/javascript"><!--
     //Erstmal warten bis Dokument fertig geladen ist
     $(document).ready(function(){       
+        //rmenken
+		//document.rmenkenForm.mem_search=="0_"
         //Bei Seitenaufruf Daten laden
-        $.post("'.$g_root_path.'/adm_program/modules/lists/members_get.php?rol_id='.$getRoleId.'", $("#memserach_form").serialize(), function(result){
+        $.post("'.$g_root_path.'/adm_program/modules/lists/members_get.php?rol_id='.$getRoleId.'", $("#memsearch_form").serialize(), function(result){
             $("form#memlist_form").append(result).show();
             $("#list_load_animation").hide();
             return false;

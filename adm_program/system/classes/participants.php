@@ -10,7 +10,7 @@
  *  of this object. The Id will be checked and stored in the object. So no parameters are required when calling
  *  a function.
  *  Second possibility is to pass the Id to a function of this object. The stored value in current object will be overwritten.
- *  This is recommended looping an array, for example, with various Id´s. 
+ *  This is recommended looping an array, for example, with various Idï¿½s. 
  */
  /******************************************************************************
  *
@@ -44,7 +44,7 @@ class Participants
 
     public function __destruct ()
     {
-        unset ($this);
+        //unset ($this);//removed due to php7 comp.
     }
 
     /**
@@ -100,7 +100,7 @@ class Participants
 
         $result = $this->mDb->query($sql);
 
-        // Write all member Id´s and leader status in an array
+        // Write all member Idï¿½s and leader status in an array
         $numParticipants = array();
 
         while ($row = $this->mDb->fetch_array($result))
@@ -173,7 +173,8 @@ class Participants
      */
     public function getParticipantsArray($rolId = 0, $order = 'ASC')
     {
-        $participants = '';
+        //$participants = '';
+        $participants = array();
         global $gProfileFields;
 
         $this->checkId($rolId);

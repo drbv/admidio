@@ -48,14 +48,14 @@ class Menu
 		$this->items[$id] = $this->mkItem($id, $link, $text, $icon, $desc);
 	}
 	
-	public function addSubItem($parentId, $id, $link, $text)
+  public function addSubItem($parentId, $id, $link, $text, $icon)
 	{
 		// add root path to link unless the full URL is given
 		if (preg_match('/^http(s?):\/\//', $link)==0)
 		{
 			$link = $this->root_path . $link;
 		}
-		$this->items[$parentId]['subitems'][$id] = array('link'=>$link, 'text'=>$text);
+    $this->items[$parentId]['subitems'][$id] = array('link'=>$link, 'text'=>$text, 'icon'=>$icon);
 	}
 	
 	// gets the position of a given ID in the menu
@@ -127,6 +127,16 @@ class Menu
 						$html .= $separator . '<a href="'.$this->items[$key]['subitems'][$subkey]['link'].'">'.$this->items[$key]['subitems'][$subkey]['text'].'</a>';
 						$separator = '&nbsp;| ';
 					}
+          //rmenken:added subkey icon
+          if($this->items[$key]['subitems'][$subkey]['icon']){
+            $icon = $this->items[$key]['subitems'][$subkey]['icon'];
+            // add THEME_PATH to images unless the full URL is given
+            if (preg_match('/^http(s?):\/\//', $icon)==0)
+            {
+              $icon = THEME_PATH . $icon;
+            }    
+            $html .= '<img src="'.$icon.'" width="20" hight="20" title="BETA Version">';
+          }
 					$html .= ' &#93;';
 				}
 				

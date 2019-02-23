@@ -58,7 +58,15 @@ $folderContent = $currentFolder->getFolderContentsForDownload();
 //NavigationsLink erhalten
 $navigationBar = $currentFolder->getNavigationForDownload();
 
-
+// Turnierergebnisse besonders beachten
+// Folders werden in den Organisationseinstellungen gesetzt!  
+// Folder 17 ==> Turnierergebnisse Jahrgang 2015
+// Folder 37 ==> Turnierergebnisse Jahrgang 2016  
+// Folder 75 ==> Turnierergebnisse Jahrgang 2017  
+$txt_folder_id = explode(";", $gPreferences['txt_folder_id']); 
+if (in_array("$getFolderId", $txt_folder_id)) {
+  $turnier_erg_folder = TRUE;
+}
 
 // Html-Kopf ausgeben
 $gLayout['title']  = $gL10n->get('DOW_DOWNLOADS');
@@ -104,14 +112,34 @@ $DownloadsMenu->show();
 
 
 //Anlegen der Tabelle
+//
+if($getFolderId == 80){
+  // spezieller Folder id=80 Startlisten
 echo '
-<table class="tableList" cellspacing="0">
+  <table class="tableListDownloadModule" cellspacing="0">
+        <thead>
+           <tr>
+             <th style="width: 400px;">Startlisten: Links zu den CSV-Daten für das Turnierprogram.</th>
+           </tr>
+        </thead>
+        <tr><td>';
+  $startlisten = file_get_contents('http://drbv.de/adm/eigene_scripts/Startlisten.txt');
+  echo nl2br($startlisten);        
+  echo '</td></tr></table><br>';
+} else {
+  // alle anderen Folder
+  echo '
+  <table class="tableListDownloadModule" cellspacing="0">
         <thead>
             <tr>
                 <th style="width: 25px;"><img class="iconInformation"
                     src="'. THEME_PATH. '/icons/download.png" alt="'.$gL10n->get('SYS_FOLDER').' / '.$gL10n->get('DOW_FILE_TYPE').'" title="'.$gL10n->get('SYS_FOLDER').' / '.$gL10n->get('DOW_FILE_TYPE').'" />
-                </th>
-                <th>'.$gL10n->get('SYS_NAME').'</th>
+                </th>';
+                if ($turnier_erg_folder) {
+                  echo '<th style="text-align: left;">Turnier</th>';
+                }
+                echo '
+                <th style="text-align: left;">Dateiname</th>
                 <th>'.$gL10n->get('SYS_DATE_MODIFIED').'</th>
                 <th>'.$gL10n->get('SYS_SIZE').'</th>
                 <th>'.$gL10n->get('DOW_COUNTER').'</th>';
@@ -132,7 +160,9 @@ if (count($folderContent) == 0)
     {
         $colspan = '5';
     }
-
+    if ($turnier_erg_folder) {
+        $colspan = $colspan + 1;
+    }
     echo'<tr>
        <td colspan="'.$colspan.'">'.$gL10n->get('DOW_FOLDER_NO_FILES').'</td>
     </tr>';
@@ -146,13 +176,15 @@ else
 
             $nextFolder = $folderContent['folders'][$i];
 
+            if($nextFolder['fol_id'] != 148  || $gCurrentUser->isWebmaster()){
+            // spezieller Folder id=148 Aktivenlisten, nur für Webmaster sichtbar
             echo '
             <tr class="tableMouseOver" id="row_folder_'.$nextFolder['fol_id'].'">
                 <td>
                       <a class="iconLink" href="'.$g_root_path.'/adm_program/modules/downloads/downloads.php?folder_id='. $nextFolder['fol_id']. '">
                     <img src="'. THEME_PATH. '/icons/download.png" alt="'.$gL10n->get('SYS_FOLDER').'" title="'.$gL10n->get('SYS_FOLDER').'" /></a>
                 </td>
-                <td><a href="'.$g_root_path.'/adm_program/modules/downloads/downloads.php?folder_id='. $nextFolder['fol_id']. '">'. $nextFolder['fol_name']. '</a>';
+                <td style="text-align: left;"><a href="'.$g_root_path.'/adm_program/modules/downloads/downloads.php?folder_id='. $nextFolder['fol_id']. '">'. $nextFolder['fol_name']. '</a>';
                 if($nextFolder['fol_description']!="")
                 {
                     echo '<span class="iconLink" ><a class="textTooltip" title="'.$nextFolder['fol_description'].'" href="#"><img src="'. THEME_PATH. '/icons/info.png" alt="'.$gL10n->get('SYS_FOLDER').'"/></a></span>';
@@ -182,7 +214,7 @@ else
                       </td>';
                 }
             echo '</tr>';
-
+           }//end if($nextFolder['fol_id'] != 148  || $gCurrentUser->isWebmaster())
         }
     }
 
@@ -209,10 +241,15 @@ else
             <tr class="tableMouseOver" id="row_file_'.$nextFile['fil_id'].'">
                 <td>
                     <a class="iconLink" href="'.$g_root_path.'/adm_program/modules/downloads/get_file.php?file_id='. $nextFile['fil_id']. '">
-                    <img src="'. THEME_PATH. '/icons/'.$iconFile.'" alt="'.$gL10n->get('SYS_FILE').'" title="'.$gL10n->get('SYS_FILE').'" /></a>
-                </td>
-                <td><a href="'.$g_root_path.'/adm_program/modules/downloads/get_file.php?file_id='. $nextFile['fil_id']. '">'. $nextFile['fil_name']. '</a>';
-                if($nextFile['fil_description']!="")
+                    <img src="'. THEME_PATH. '/icons/'.$iconFile.'" alt="'.$gL10n->get('SYS_FILE').'" title="'.$gL10n->get('SYS_FILE').' download!" /></a>
+                </td>';
+                if ($turnier_erg_folder) {
+                  echo '<td style="text-align: left;"><a href="'.$g_root_path.'/adm_program/modules/downloads/open_file.php?file_id='. $nextFile['fil_id']. '" target="_blank" title="Ansicht!">'.$nextFile['fil_description'].'</a></td>';
+                }
+                echo '                                                                                                                               
+                <td style="text-align: left;"><a href="'.$g_root_path.'/adm_program/modules/downloads/get_file.php?file_id='. $nextFile['fil_id']. '" title="Download!">'. $nextFile['fil_name']. '</a>';
+
+                if($nextFile['fil_description']!="" && !$turnier_erg_folder)
                 {
                     echo '<span class="iconLink" ><a class="textTooltip" title="'.$nextFile['fil_description'].'" href="#"><img src="'. THEME_PATH. '/icons/info.png" alt="'.$gL10n->get('SYS_FILE').'"/></a></span>';
                 }
@@ -248,6 +285,7 @@ else
 
 //Ende der Tabelle
 echo'</table>';
+} // Ende Folder 80 else
 
 //Falls der User DownloadAdmin ist werden jetzt noch die zusaetzlich im Ordner enthaltenen Files angezeigt.
 if ($gCurrentUser->editDownloadRight())

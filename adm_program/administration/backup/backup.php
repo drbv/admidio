@@ -20,11 +20,12 @@ require_once('backup.functions.php');
 
 
 // only webmaster are allowed to start backup
+/*
 if($gCurrentUser->isWebmaster() == false)
 {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
-
+*/
 // check backup path in adm_my_files and create it if neccessary
 $myFilesBackup = new MyFiles('BACKUP');
 if($myFilesBackup->checkSettings() == false)
@@ -72,10 +73,10 @@ echo '<h1 class="moduleHeadline">'.$gLayout['title'].'</h1>';
 $backupMenu = new ModuleMenu('admMenuBackup');
 
 // show link to create new backup
-$backupMenu->addItem('admMenuItemNewBackup', $g_root_path.'/adm_program/administration/backup/backup_script.php', 
+// $backupMenu->addItem('admMenuItemNewBackup', $g_root_path.'/adm_program/administration/backup/backup_script.php', 
+$backupMenu->addItem('admMenuItemNewBackup', $g_root_path.'/eigene_scripts/sql_backup.php',
 							$gL10n->get('BAC_START_BACKUP'), 'database_save.png');
 $backupMenu->show();
-
 
 //Anlegen der Tabelle
 echo '

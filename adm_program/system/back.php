@@ -13,6 +13,7 @@
 include('common.php');
 
 // die letzte Url aus dem Stack loeschen, da dies die aktuelle Seite ist
+//print_r($gNavigation->deleteLastUrl());echo" ::DEBUG:NAV-LastUrl<br>";  
 $gNavigation->deleteLastUrl();
 
 // Jetzt die "neue" letzte Url aufrufen

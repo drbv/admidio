@@ -23,6 +23,7 @@ require_once('../../system/classes/user_registration.php');
 // Initialize and check the parameters
 $getUserId  = admFuncVariableIsValid($_GET, 'user_id', 'numeric', 0);
 $getNewUser = admFuncVariableIsValid($_GET, 'new_user', 'numeric', 0);
+$getAkroclass = admFuncVariableIsValid($_GET, 'akroclass', 'numeric', 0);
 
 // if current user has no login then only show registration dialog
 if($gValidLogin == false)
@@ -113,7 +114,43 @@ if($getNewUser == 2)
     }
 }
 
+// Disable Akrobatik Checks for GS (immer) und Webmaster (wenn in den globalen Einstellungen 
+// gesetzt) oder keine Akrobatikklasse vorhanden ist!  
+if($getAkroclass == 0 || hasRole("Geschäftsstelle") || ($gCurrentUser->isWebmaster() && $gPreferences['drbv_disable_akro_check'] == 1)){
+  $akro_check_groups_active = FALSE;
+  $akro_check_tso_active    = FALSE;
+} else {
+  $akro_check_groups_active = TRUE;
+  $akro_check_tso_active    = TRUE;
+}
+  
 // nun alle Profilfelder pruefen
+$akro_dual_cnt_vr  = 0;
+$akro_dual_cnt_zr  = 0;
+$akro_dual_cnt_er  = 0;
+$akro_form_cnt_vr  = 0;
+$akro_form_cnt_zr  = 0;
+$akro_form_cnt_er  = 0;    
+$akro_combi_cnt_vr = 0;
+$akro_combi_cnt_zr = 0;
+$akro_combi_cnt_er = 0;
+$akro_rot_cnt_vr   = 0;
+$akro_rot_cnt_zr   = 0;
+$akro_rot_cnt_er   = 0;
+$akro_vw_cnt_vr    = 0;
+$akro_rw_cnt_vr    = 0;
+$akro_dive_cnt_vr  = 0;  
+$akro_vw_cnt_zr    = 0;
+$akro_rw_cnt_zr    = 0;
+$akro_dive_cnt_zr  = 0;  
+$akro_vw_cnt_er    = 0;
+$akro_rw_cnt_er    = 0;
+$akro_dive_cnt_er  = 0;  
+$akro_grpid        = '';
+$defsub            = 1;
+unset ($akro_vr_arr);
+unset ($akro_zr_arr);
+unset ($akro_er_arr);  
 foreach($gProfileFields->mProfileFields as $field)
 {
     $post_id = 'usf-'. $field->getValue('usf_id');    
@@ -160,6 +197,1287 @@ foreach($gProfileFields->mProfileFields as $field)
 					}
 				}
 			}
+      // rmenken: Akro pruefen
+      // Vorrunde:
+      // =========================================
+      // Vorrunde: Akro 1..8 check Anzahl Kombinationen
+      // Vorrunde: Akro 1..8 check Anzahl Rotationen
+      // Vorrunde: Akro 1..8 check auf Doppelte
+      // Vorrunde: Akro 1..8, check auf max. 70 Punkte Formation
+      // Akro 6-8, E1 und E2 akro string modifizieren, um grpid rauszufiltern            
+
+      //Akro1
+      if ($post_id == 'usf-43') {        
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          unset($akro_pkt);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid = trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]);
+          $remind_class = substr($_POST[$post_id],0,1);
+          // define substr to check; in case Formation there are 2 inital letters
+          if($remind_class == 'F'){
+            $defsub = 2;
+          }  
+        } else {
+          if ($akro_check_tso_active) {
+            $gMessage->show('Die 1. Akrobatik in der Vorrunde ist nicht belegt!', 'Vorrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_vr = $akro_dual_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_vr = $akro_form_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_vr = $akro_combi_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_vr = $akro_rot_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_vr = 1;
+        }
+      }
+      //Akro2
+      if ($post_id == 'usf-44') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if ($akro_check_tso_active) {
+            $gMessage->show('Die 2. Akrobatik in der Vorrunde ist nicht belegt!', 'Vorrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_vr = $akro_dual_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_vr = $akro_form_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_vr = $akro_combi_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_vr = $akro_rot_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_vr = 1;
+        }
+      }
+      //Akro3
+      if ($post_id == 'usf-45') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if ($akro_check_tso_active) {
+            $gMessage->show('Die 3. Akrobatik in der Vorrunde ist nicht belegt!', 'Vorrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_vr = $akro_dual_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_vr = $akro_form_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_vr = $akro_combi_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_vr = $akro_rot_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],0,1) == 'J' && $akro_check_tso_active){
+          if ($akro_combi_cnt_vr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Kombinationen ist 2 und wurde überschritten!', 'Vorrunden Akrobatik');
+          }
+          if ($akro_rot_cnt_vr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Rotationen ist 2 und wurde überschritten!', 'Vorrunden Akrobatik');
+          }
+        }
+        if ($akro_check_groups_active){
+          $akro_vr_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_vr_arr) == count(array_unique($akro_vr_arr)) || $akro_vr_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_vr_arr) - count(array_unique($akro_vr_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_vr_arr).' : '.$cnt_grpid.' : ', 'Vorrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_vr_arr, array_unique($akro_vr_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_vr_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Vorrunden Akrobatik');            
+          }
+        }                        
+      }
+      //Akro4
+      if ($post_id == 'usf-46') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          //if ($akro_check_tso_active && (substr($_POST[$post_id],0,1) == 'A' || substr($_POST[$post_id],0,1) == 'B' || substr($_POST[$post_id],0,1) == 'C' || substr($_POST[$post_id],0,1) == 'F')) {
+          if (($remind_class == 'C' || $remind_class == 'B' || $remind_class == 'A' || $remind_class == 'F') && $akro_check_tso_active){
+            $gMessage->show('Die 4. Akrobatik in der Vorrunde ist nicht belegt!', 'Vorrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_vr = $akro_dual_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_vr = $akro_form_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_vr = $akro_combi_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_vr = $akro_rot_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],0,1) == 'C' && $akro_check_tso_active){
+          if ($akro_combi_cnt_vr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Kombinationen ist 2 und wurde überschritten!', 'Vorrunden Akrobatik');
+          }
+          if ($akro_rot_cnt_vr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Rotationen ist 2 und wurde überschritten!', 'Vorrunden Akrobatik');
+          }
+        }        
+        if ($akro_check_groups_active){
+          $akro_vr_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_vr_arr) == count(array_unique($akro_vr_arr)) || $akro_vr_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_vr_arr) - count(array_unique($akro_vr_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_vr_arr).' : '.$cnt_grpid.' : ', 'Vorrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_vr_arr, array_unique($akro_vr_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_vr_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Vorrunden Akrobatik');            
+          }
+        }                
+      }
+      //Akro5
+      if ($post_id == 'usf-47') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if (($remind_class == 'B' || $remind_class == 'A' || $remind_class == 'F') && $akro_check_tso_active){
+            $gMessage->show('Die 5. Akrobatik in der Vorrunde ist nicht belegt!', 'Vorrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_vr = $akro_dual_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_vr = $akro_form_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_vr = $akro_combi_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_vr = $akro_rot_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_vr = 1;
+        }
+        if ((substr($_POST[$post_id],0,1) == 'A' || substr($_POST[$post_id],0,1) == 'B') && $akro_check_groups_active){
+          if ($akro_combi_cnt_vr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Kombinationen ist 2 und wurde überschritten!', 'Vorrunden Akrobatik');
+          }
+          if ($akro_rot_cnt_vr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Rotationen ist 2 und wurde überschritten!', 'Vorrunden Akrobatik');
+          }
+          if ($akro_vw_cnt_vr == 0) {
+            $gMessage->show('Die Kategorie Vorwärtselement ist nicht belegt worden!', 'Vorrunden Akrobatik');
+          }
+          if ($akro_rw_cnt_vr == 0) {
+            $gMessage->show('Die Kategorie Rückwärtselement ist nicht belegt worden!', 'Vorrunden Akrobatik');
+          }
+          if ($akro_rot_cnt_vr == 0) {
+            $gMessage->show('Die Kategorie Rotationen ist nicht belegt worden!', 'Vorrunden Akrobatik');
+          }        
+          if ($akro_dive_cnt_vr == 0) {
+            $gMessage->show('Die Kategorie Kopfüberelement ist nicht belegt worden!', 'Vorrunden Akrobatik');
+          }
+        }                         
+        if ($akro_check_groups_active){
+          $akro_vr_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_vr_arr) == count(array_unique($akro_vr_arr)) || $akro_vr_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_vr_arr) - count(array_unique($akro_vr_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_vr_arr).' : '.$cnt_grpid.' : ', 'Vorrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_vr_arr, array_unique($akro_vr_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_vr_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Vorrunden Akrobatik');            
+          }
+        }                
+      }
+      //Akro6
+      if ($post_id == 'usf-48') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if (($remind_class == 'F') && $akro_check_tso_active){
+            $gMessage->show('Die 6. Akrobatik in der Vorrunde ist nicht belegt!', 'Vorrunden Akrobatik');
+          }
+        }        
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_vr = $akro_dual_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_vr = $akro_form_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_vr = $akro_combi_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_vr = $akro_rot_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_vr = 1;
+        }
+        if ((substr($_POST[$post_id],0,1) == 'F') && $akro_check_groups_active){
+          $akro_vr_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_vr_arr) == count(array_unique($akro_vr_arr)) || $akro_vr_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_vr_arr) - count(array_unique($akro_vr_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_vr_arr).' : '.$cnt_grpid.' : ', 'Vorrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_vr_arr, array_unique($akro_vr_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_vr_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Vorrunden Akrobatik');            
+          }
+          if (array_sum(array_slice($akro_pkt,0,6)) > 70) {
+            $gMessage->show('Der max. zulässige akrobatische Vorwert wurde überschritten!<br>Erlaubt 70,00 Pkt. Aktuell = '.array_sum(array_slice($akro_pkt,0,6)).' Pkt.', 'Vorrunden Akrobatik');          
+          }                    
+        }                
+      }
+      //Akro7
+      if ($post_id == 'usf-75') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_vr = $akro_dual_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_vr = $akro_form_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_vr = $akro_combi_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_vr = $akro_rot_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_vr = 1;
+        }
+        if ((substr($_POST[$post_id],0,1) == 'F') && $akro_check_groups_active){
+          $akro_vr_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_vr_arr) == count(array_unique($akro_vr_arr)) || $akro_vr_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_vr_arr) - count(array_unique($akro_vr_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_vr_arr).' : '.$cnt_grpid.' : ', 'Vorrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_vr_arr, array_unique($akro_vr_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_vr_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Vorrunden Akrobatik');            
+          }
+          if (array_sum(array_slice($akro_pkt,0,7)) > 70) {
+            $gMessage->show('Der max. zulässige akrobatische Vorwert wurde überschritten!<br>Erlaubt 70,00 Pkt. Aktuell = '.array_sum(array_slice($akro_pkt,0,7)).' Pkt.', 'Vorrunden Akrobatik');          
+          }                    
+        }                        
+      }
+      //Akro8
+      if ($post_id == 'usf-76') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_vr = $akro_dual_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_vr = $akro_form_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_vr = $akro_combi_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_vr = $akro_rot_cnt_vr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_vr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_vr = 1;
+        }
+        if ($remind_class == 'F' && $akro_check_groups_active){
+          if ($akro_combi_cnt_vr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Kombinationen ist 2 und wurde überschritten!', 'Vorrunden Akrobatik');
+          }
+          if ($akro_rot_cnt_vr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Rotationen ist 2 und wurde überschritten!', 'Vorrunden Akrobatik');
+          }
+          if ($akro_vw_cnt_vr == 0) {
+            $gMessage->show('Die Kategorie Vorwärtselement ist nicht belegt worden!', 'Vorrunden Akrobatik');
+          }
+          if ($akro_rw_cnt_vr == 0) {
+            $gMessage->show('Die Kategorie Rückwärtselement ist nicht belegt worden!', 'Vorrunden Akrobatik');
+          }
+          if ($akro_rot_cnt_vr == 0) {
+            $gMessage->show('Die Kategorie Rotationen ist nicht belegt worden!', 'Vorrunden Akrobatik');
+          }        
+          if ($akro_dive_cnt_vr == 0) {
+            $gMessage->show('Die Kategorie Kopfüberelement ist nicht belegt worden!', 'Vorrunden Akrobatik');
+          }
+          if ($akro_dive_cnt_vr >= 4) {
+            $gMessage->show('Die max. Anzahl an Kopfüberelementen ist 3 und wurde überschritten!', 'Vorrunden Akrobatik');
+          }
+          if ($akro_dual_cnt_vr >= 3) {
+            $gMessage->show('Die max. Anzahl an Dualakrobatiken ist 2 und wurde überschritten!', 'Vorrunden Akrobatik');
+          }
+          if ($akro_form_cnt_vr >= 3) {
+            $gMessage->show('Die max. Anzahl an Formationsspezifischen Akrobatiken ist 2 und wurde überschritten!', 'Vorrunden Akrobatik');
+          }
+        }                         
+        if ((substr($_POST[$post_id],0,1) == 'F') && $akro_check_groups_active){
+          $akro_vr_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_vr_arr) == count(array_unique($akro_vr_arr)) || $akro_vr_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_vr_arr) - count(array_unique($akro_vr_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_vr_arr).' : '.$cnt_grpid.' : ', 'Vorrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_vr_arr, array_unique($akro_vr_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_vr_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Vorrunden Akrobatik');            
+          }
+          if (array_sum(array_slice($akro_pkt,0,8)) > 70) {
+            $gMessage->show('Der max. zulässige akrobatische Vorwert wurde überschritten!<br>Erlaubt 70,00 Pkt. Aktuell = '.array_sum(array_slice($akro_pkt,0,8)).' Pkt.', 'Vorrunden Akrobatik');          
+          }                    
+        }                        
+      }
+      //AkroE1
+      if ($post_id == 'usf-68') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        }        
+      }
+      //AkroE2
+      if ($post_id == 'usf-149') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        }        
+      }
+      // ZwRunde:
+      // =========================================
+      // ZwRunde: Akro 1..8, check Anzahl Kombinationen
+      // ZwRunde: Akro 1..8, check Anzahl Rotationen
+      // ZwRunde: Akro 1..8, check auf Doppelte
+      // ZwRunde: Akro 1..8, check auf max. 70 Punkte Formation
+      // E1 und E2 akro string modifizieren, um grpid rauszufiltern
+      //Akro1
+      if ($post_id == 'usf-50') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          unset($akro_pkt);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid = trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if ($akro_check_tso_active) {
+            $gMessage->show('Die 1. Akrobatik in der Zwischenrunde ist nicht belegt!', 'Zwischenrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_zr = $akro_dual_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_zr = $akro_form_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_zr = $akro_combi_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_zr = $akro_rot_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_zr = 1;
+        }
+      }
+      //Akro2
+      if ($post_id == 'usf-55') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if ($akro_check_tso_active) {
+            $gMessage->show('Die 2. Akrobatik in der Zwischenrunde ist nicht belegt!', 'Zwischenrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_zr = $akro_dual_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_zr = $akro_form_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_zr = $akro_combi_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_zr = $akro_rot_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_zr = 1;
+        }
+      }
+      //Akro3
+      if ($post_id == 'usf-56') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if ($akro_check_tso_active) {
+            $gMessage->show('Die 3. Akrobatik in der Zwischenrunde ist nicht belegt!', 'Zwischenrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_zr = $akro_dual_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_zr = $akro_form_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_zr = $akro_combi_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_zr = $akro_rot_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],0,1) == 'J' && $akro_check_tso_active){
+          if ($akro_combi_cnt_zr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Kombinationen ist 2 und wurde überschritten!', 'Zwischenrunden Akrobatik');
+          }
+          if ($akro_rot_cnt_zr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Rotationen ist 2 und wurde überschritten!', 'Zwischenrunden Akrobatik');
+          }
+        }
+        if ($akro_check_groups_active){
+          $akro_zr_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_zr_arr) == count(array_unique($akro_zr_arr)) || $akro_zr_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_zr_arr) - count(array_unique($akro_zr_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_zr_arr).' : '.$cnt_grpid.' : ', 'Zwischenrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_zr_arr, array_unique($akro_zr_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_zr_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Zwischenrunden Akrobatik');            
+          }
+        }        
+      }
+      //Akro4
+      if ($post_id == 'usf-57') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if (($remind_class == 'C' || $remind_class == 'B' || $remind_class == 'A' || $remind_class == 'F') && $akro_check_tso_active) {
+            $gMessage->show('Die 4. Akrobatik in der Zwischenrunde ist nicht belegt!', 'Zwischenrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_zr = $akro_dual_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_zr = $akro_form_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_zr = $akro_combi_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_zr = $akro_rot_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],0,1) == 'C' && $akro_check_tso_active){
+          if ($akro_combi_cnt_zr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Kombinationen ist 2 und wurde überschritten!', 'Zwischenrunden Akrobatik');
+          }
+          if ($akro_rot_cnt_zr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Rotationen ist 2 und wurde überschritten!', 'Zwischenrunden Akrobatik');
+          }
+        }
+        if ($akro_check_groups_active){
+          $akro_zr_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_zr_arr) == count(array_unique($akro_zr_arr)) || $akro_zr_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_zr_arr) - count(array_unique($akro_zr_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_zr_arr).' : '.$cnt_grpid.' : ', 'Zwischenrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_zr_arr, array_unique($akro_zr_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_zr_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Zwischenrunden Akrobatik');            
+          }
+        }                
+      }
+      //Akro5
+      if ($post_id == 'usf-58') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if (($remind_class == 'B' || $remind_class == 'A' || $remind_class == 'F') && $akro_check_tso_active) {
+            $gMessage->show('Die 5. Akrobatik in der Zwischenrunde ist nicht belegt!', 'Zwischenrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_zr = $akro_dual_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_zr = $akro_form_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_zr = $akro_combi_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_zr = $akro_rot_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_zr = 1;
+        }
+        if ((substr($_POST[$post_id],0,1) == 'A' || substr($_POST[$post_id],0,1) == 'B') && $akro_check_groups_active){
+          if ($akro_combi_cnt_zr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Kombinationen ist 2 und wurde überschritten!', 'Zwischenrunden Akrobatik');
+          } 
+          if ($akro_rot_cnt_zr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Rotationen ist 2 und wurde überschritten!', 'Zwischenrunden Akrobatik');
+          }
+          if ($akro_vw_cnt_zr == 0) {
+            $gMessage->show('Die Kategorie Vorwärtselement ist nicht belegt worden!', 'Zwischenrunden Akrobatik');
+          }
+          if ($akro_rw_cnt_zr == 0) {
+            $gMessage->show('Die Kategorie Rückwärtselement ist nicht belegt worden!', 'Zwischenrunden Akrobatik');
+          }
+          if ($akro_rot_cnt_zr == 0) {
+            $gMessage->show('Die Kategorie Rotationen ist nicht belegt worden!', 'Zwischenrunden Akrobatik');
+          }        
+          if ($akro_dive_cnt_zr == 0) {
+            $gMessage->show('Die Kategorie Kopfüberelement ist nicht belegt worden!', 'Zwischenrunden Akrobatik');
+          }
+        }                
+        if ($akro_check_groups_active){
+          $akro_zr_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_zr_arr) == count(array_unique($akro_zr_arr)) || $akro_zr_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_zr_arr) - count(array_unique($akro_zr_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_zr_arr).' : '.$cnt_grpid.' : ', 'Zwischenrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_zr_arr, array_unique($akro_zr_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_zr_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Zwischenrunden Akrobatik');            
+          }
+        }
+      }
+      //Akro6
+      if ($post_id == 'usf-59') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if (($remind_class == 'F') && $akro_check_tso_active) {
+            $gMessage->show('Die 6. Akrobatik in der Zwischenrunde ist nicht belegt!', 'Zwischenrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_zr = $akro_dual_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_zr = $akro_form_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_zr = $akro_combi_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_zr = $akro_rot_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_zr = 1;
+        }
+        if ((substr($_POST[$post_id],0,1) == 'F') && $akro_check_groups_active){
+          $akro_zr_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_zr_arr) == count(array_unique($akro_zr_arr)) || $akro_zr_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_zr_arr) - count(array_unique($akro_zr_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_zr_arr).' : '.$cnt_grpid.' : ', 'Zwischenrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_zr_arr, array_unique($akro_zr_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_zr_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Zwischenrunden Akrobatik');            
+          }
+          if (array_sum(array_slice($akro_pkt,0,6)) > 70) {
+            $gMessage->show('Der max. zulässige akrobatische Vorwert wurde überschritten!<br>Erlaubt 70,00 Pkt. Aktuell = '.array_sum(array_slice($akro_pkt,0,6)).' Pkt.', 'Zwischenrunden Akrobatik');          
+          }                    
+        }        
+      }
+      //Akro7
+      if ($post_id == 'usf-77') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } 
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_zr = $akro_dual_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_zr = $akro_form_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_zr = $akro_combi_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_zr = $akro_rot_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_zr = 1;
+        }
+        if ((substr($_POST[$post_id],0,1) == 'F') && $akro_check_groups_active){
+          $akro_zr_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_zr_arr) == count(array_unique($akro_zr_arr)) || $akro_zr_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_zr_arr) - count(array_unique($akro_zr_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_zr_arr).' : '.$cnt_grpid.' : ', 'Zwischenrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_zr_arr, array_unique($akro_zr_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_zr_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Zwischenrunden Akrobatik');            
+          }
+          if (array_sum(array_slice($akro_pkt,0,7)) > 70) {
+            $gMessage->show('Der max. zulässige akrobatische Vorwert wurde überschritten!<br>Erlaubt 70,00 Pkt. Aktuell = '.array_sum(array_slice($akro_pkt,0,7)).' Pkt.', 'Zwischenrunden Akrobatik');          
+          }                    
+        }        
+      }
+      //Akro8
+      if ($post_id == 'usf-78') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        }  
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_zr = $akro_dual_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_zr = $akro_form_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_zr = $akro_combi_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_zr = $akro_rot_cnt_zr+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_zr = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_zr = 1;
+        }
+        if ($remind_class == 'F' && $akro_check_groups_active){
+          if ($akro_combi_cnt_zr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Kombinationen ist 2 und wurde überschritten!', 'Zwischenrunden Akrobatik');
+          } 
+          if ($akro_rot_cnt_zr >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Rotationen ist 2 und wurde überschritten!', 'Zwischenrunden Akrobatik');
+          }
+          if ($akro_vw_cnt_zr == 0) {
+            $gMessage->show('Die Kategorie Vorwärtselement ist nicht belegt worden!', 'Zwischenrunden Akrobatik');
+          }
+          if ($akro_rw_cnt_zr == 0) {
+            $gMessage->show('Die Kategorie Rückwärtselement ist nicht belegt worden!', 'Zwischenrunden Akrobatik');
+          }
+          if ($akro_rot_cnt_zr == 0) {
+            $gMessage->show('Die Kategorie Rotationen ist nicht belegt worden!', 'Zwischenrunden Akrobatik');
+          }        
+          if ($akro_dive_cnt_zr == 0) {
+            $gMessage->show('Die Kategorie Kopfüberelement ist nicht belegt worden!', 'Zwischenrunden Akrobatik');
+          }
+          if ($akro_dive_cnt_zr >= 4) {
+            $gMessage->show('Die max. Anzahl an Kopfüberelementen ist 3 und wurde überschritten!', 'Zwischenrunden Akrobatik');
+          }
+          if ($akro_dual_cnt_zr >= 3) {
+            $gMessage->show('Die max. Anzahl an Dualakrobatiken ist 2 und wurde überschritten!', 'Zwischenrunden Akrobatik');
+          }
+          if ($akro_form_cnt_zr >= 3) {
+            $gMessage->show('Die max. Anzahl an Formationsspezifischen Akrobatiken ist 2 und wurde überschritten!', 'Zwischenrunden Akrobatik');
+          }
+        }                
+        if ((substr(substr($_POST[$post_id],0,1) == 'F') && $akro_check_groups_active)){
+          $akro_zr_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_zr_arr) == count(array_unique($akro_zr_arr)) || $akro_zr_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_zr_arr) - count(array_unique($akro_zr_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_zr_arr).' : '.$cnt_grpid.' : ', 'Zwischenrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_zr_arr, array_unique($akro_zr_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_zr_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Zwischenrunden Akrobatik');            
+          }
+          if (array_sum(array_slice($akro_pkt,0,8)) > 70) {
+            $gMessage->show('Der max. zulässige akrobatische Vorwert wurde überschritten!<br>Erlaubt 70,00 Pkt. Aktuell = '.array_sum(array_slice($akro_pkt,0,8)).' Pkt.', 'Zwischenrunden Akrobatik');          
+          }                    
+        }        
+      }
+      //AkroE1
+      if ($post_id == 'usf-69') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        }        
+      }
+      //AkroE2
+      if ($post_id == 'usf-150') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        }        
+      }
+      // Endrunde:
+      // =========================================
+      // Endrunde: Akro 1..8, check Anzahl Kombinationen
+      // Endrunde: Akro 1..8, check Anzahl Rotationen
+      // Endrunde: Akro 1..8, check Anzahl Dives
+      // Endrunde: Akro 1..8, check auf Doppelte
+      // Endrunde: Akro 1..6, check auf max. 70 Punkte Paare
+      // Endrunde: Akro 1..8, check Formation - 2 DUAL Akros
+      // Endrunde: Akro 1..8, check Formation - 2 FORM Akros      
+      // Endrunde: Akro 1..8, check auf max. 70 Punkte Formation
+      // Akro E1 und E2 akro string modifizieren, um grpid rauszufiltern
+
+      //Akro1
+      if ($post_id == 'usf-51') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          unset($akro_pkt);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid = trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if ($akro_check_tso_active) {
+            $gMessage->show('Die 1. Akrobatik in der Endrunde ist nicht belegt!', 'Endrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_er = $akro_dual_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_er = $akro_form_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_er = $akro_combi_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_er = $akro_rot_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_er = 1;
+        }
+      }
+      //Akro2
+      if ($post_id == 'usf-60') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if ($akro_check_tso_active) {
+            $gMessage->show('Die 2. Akrobatik in der Endrunde ist nicht belegt!', 'Endrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_er = $akro_dual_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_er = $akro_form_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_er = $akro_combi_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_er = $akro_rot_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_er = 1;
+        }
+      }
+      //Akro3
+      if ($post_id == 'usf-61') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if ($akro_check_tso_active) {
+            $gMessage->show('Die 3. Akrobatik in der Endrunde ist nicht belegt!', 'Endrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_er = $akro_dual_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_er = $akro_form_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_er = $akro_combi_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_er = $akro_rot_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],0,1) == 'J' && $akro_check_tso_active){
+          if ($akro_combi_cnt_er >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Kombinationen ist 2 und wurde überschritten!', 'Endrunden Akrobatik');
+          }
+          if ($akro_rot_cnt_er >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Rotationen ist 2 und wurde überschritten!', 'Endrunden Akrobatik');
+          }
+        }
+        if ($akro_check_groups_active){
+          $akro_er_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_er_arr) == count(array_unique($akro_er_arr)) || $akro_er_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_er_arr) - count(array_unique($akro_er_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_er_arr).' : '.$cnt_grpid.' : ', 'Endrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_er_arr, array_unique($akro_er_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_er_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Endrunden Akrobatik');            
+          }      
+        }        
+      }
+      //Akro4
+      if ($post_id == 'usf-62') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if (($remind_class == 'C' || $remind_class == 'B' || $remind_class == 'A' || $remind_class == 'F') && $akro_check_tso_active) {
+            $gMessage->show('Die 4. Akrobatik in der Endrunde ist nicht belegt!', 'Endrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_er = $akro_dual_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_er = $akro_form_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_er = $akro_combi_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_er = $akro_rot_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],0,1) == 'C' && $akro_check_tso_active){
+          if ($akro_combi_cnt_er >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Kombinationen ist 2 und wurde überschritten!', 'Endrunden Akrobatik');
+          }
+          if ($akro_rot_cnt_er >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Rotationen ist 2 und wurde überschritten!', 'Endrunden Akrobatik');
+          }
+        }
+        if ($akro_check_groups_active){
+          $akro_er_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_er_arr) == count(array_unique($akro_er_arr)) || $akro_er_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_er_arr) - count(array_unique($akro_er_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_er_arr).' : '.$cnt_grpid.' : ', 'Endrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_er_arr, array_unique($akro_er_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_er_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Endrunden Akrobatik');            
+          }      
+        }        
+      }
+      //Akro5
+      if ($post_id == 'usf-63') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if (($remind_class == 'B' || $remind_class == 'A' || $remind_class == 'F') && $akro_check_tso_active) {
+            $gMessage->show('Die 5. Akrobatik in der Endrunde ist nicht belegt!', 'Endrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_er = $akro_dual_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_er = $akro_form_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8'|| substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_er = $akro_combi_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_er = $akro_rot_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_er = 1;
+        }
+      }
+      //Akro6
+      if ($post_id == 'usf-64') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid .= ' '.trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        } else {
+          if (($remind_class == 'B' || $remind_class == 'A' || $remind_class == 'F') && $akro_check_tso_active) {
+            $gMessage->show('Die 6. Akrobatik in der Endrunde ist nicht belegt!', 'Endrunden Akrobatik');
+          }
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_er = $akro_dual_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_er = $akro_form_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_er = $akro_combi_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_er = $akro_rot_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_er = 1;
+        }
+        if ((substr($_POST[$post_id],0,1) == 'A' || substr($_POST[$post_id],0,1) == 'B') && $akro_check_groups_active){
+          if ($akro_combi_cnt_er >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Kombinationen ist 2 und wurde überschritten!', 'Endrunden Akrobatik');
+          } 
+          if ($akro_rot_cnt_er >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Rotationen ist 2 und wurde überschritten!', 'Endrunden Akrobatik');
+          }
+          if ($akro_vw_cnt_er == 0) {
+            $gMessage->show('Die Kategorie Vorwärtselement ist nicht belegt worden!', 'Endrunden Akrobatik');
+          }
+          if ($akro_rw_cnt_er == 0) {
+            $gMessage->show('Die Kategorie Rückwärtselement ist nicht belegt worden!', 'Endrunden Akrobatik');
+          }
+          if ($akro_rot_cnt_er == 0) {
+            $gMessage->show('Die Kategorie Rotationen ist nicht belegt worden!', 'Endrunden Akrobatik');
+          }        
+          if ($akro_dive_cnt_er == 0) {
+            $gMessage->show('Die Kategorie Kopfüberelement ist nicht belegt worden!', 'Endrunden Akrobatik');
+          }
+          if (array_sum(array_slice($akro_pkt,0,6)) > 70) {
+            $gMessage->show('Der max. zulässige akrobatische Vorwert wurde überschritten!<br>Erlaubt 70,00 Pkt. Aktuell = '.array_sum(array_slice($akro_pkt,0,6)).' Pkt.', 'Endrunden Akrobatik');          
+          }          
+        }                
+        if ($akro_check_groups_active){
+          $akro_er_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_er_arr) == count(array_unique($akro_er_arr)) || $akro_er_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_er_arr) - count(array_unique($akro_er_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_er_arr).' : '.$cnt_grpid.' : ', 'Endrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_er_arr, array_unique($akro_er_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_er_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Endrunden Akrobatik');            
+          }      
+        }
+      }
+      //Akro7
+      if ($post_id == 'usf-79') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid = trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_er = $akro_dual_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_er = $akro_form_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_er = $akro_combi_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_er = $akro_rot_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_er = 1;
+        }        
+        if ((substr($_POST[$post_id],0,1) == 'F') && $akro_check_groups_active){
+          $akro_er_arr = explode(" ",trim($akro_grpid));
+          if (array_sum(array_slice($akro_pkt,0,7)) > 70) {
+            $gMessage->show('Der max. zulässige akrobatische Vorwert wurde überschritten!<br>Erlaubt 70,00 Pkt. Aktuell = '.array_sum(array_slice($akro_pkt,0,7)).' Pkt.', 'Endrunden Akrobatik');          
+          }                          
+          if (count($akro_er_arr) == count(array_unique($akro_er_arr)) || $akro_er_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_er_arr) - count(array_unique($akro_er_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_er_arr).' : '.$cnt_grpid.' : ', 'Endrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_er_arr, array_unique($akro_er_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_er_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Endrunden Akrobatik');            
+          }      
+        }        
+      }
+      //Akro8
+      if ($post_id == 'usf-80') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $akro_pkt[] = trim($akro_str[3]);
+          $akro_grpid = trim($akro_str[2]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        }
+        if (substr($_POST[$post_id],0,2) == 'FD'){
+          $akro_dual_cnt_er = $akro_dual_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],0,2) == 'FF'){
+          $akro_form_cnt_er = $akro_form_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '8' || substr($_POST[$post_id],$defsub,1) == '9'){
+          $akro_combi_cnt_er = $akro_combi_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) === '0'){
+          $akro_rot_cnt_er = $akro_rot_cnt_er+1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '3'){
+          $akro_vw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '4'){
+          $akro_rw_cnt_er = 1;
+        }
+        if (substr($_POST[$post_id],$defsub,1) == '5'){
+          $akro_dive_cnt_er = 1;
+        }
+        if ($remind_class == 'F' && $akro_check_groups_active){
+          if ($akro_combi_cnt_er >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Kombinationen ist 2 und wurde überschritten!', 'Endrunden Akrobatik');
+          } 
+          if ($akro_rot_cnt_er >= 3) {
+            $gMessage->show('Die max. Anzahl der erlaubten Rotationen ist 2 und wurde überschritten!', 'Endrunden Akrobatik');
+          }
+          if ($akro_vw_cnt_er == 0) {
+            $gMessage->show('Die Kategorie Vorwärtselement ist nicht belegt worden!', 'Endrunden Akrobatik');
+          }
+          if ($akro_rw_cnt_er == 0) {
+            $gMessage->show('Die Kategorie Rückwärtselement ist nicht belegt worden!', 'Endrunden Akrobatik');
+          }
+          if ($akro_rot_cnt_er == 0) {
+            $gMessage->show('Die Kategorie Rotationen ist nicht belegt worden!', 'Endrunden Akrobatik');
+          }        
+          if ($akro_dive_cnt_er == 0) {
+            $gMessage->show('Die Kategorie Kopfüberelement ist nicht belegt worden!', 'Endrunden Akrobatik');
+          }
+          if ($akro_dive_cnt_er >= 4) {
+            $gMessage->show('Die max. Anzahl an Kopfüberelementen ist 3 und wurde überschritten!', 'Endrunden Akrobatik');
+          }
+          if ($akro_dual_cnt_er >= 3) {
+            $gMessage->show('Die max. Anzahl an Dualakrobatiken ist 2 und wurde überschritten!', 'Endrunden Akrobatik');
+          }
+          if ($akro_form_cnt_er >= 3) {
+            $gMessage->show('Die max. Anzahl an Formationsspezifischen Akrobatiken ist 2 und wurde überschritten!', 'Endrunden Akrobatik');
+          }
+          if (array_sum(array_slice($akro_pkt,0,8)) > 70) {
+            $gMessage->show('Der max. zulässige akrobatische Vorwert wurde überschritten!<br>Erlaubt 70,00 Pkt. Aktuell = '.array_sum(array_slice($akro_pkt,0,8)).' Pkt.', 'Endrunden Akrobatik');          
+          }                          
+        }                
+        if ((substr($_POST[$post_id],0,1) == 'F') && $akro_check_groups_active){
+          $akro_er_arr = explode(" ",trim($akro_grpid));
+          if (count($akro_er_arr) == count(array_unique($akro_er_arr)) || $akro_er_arr[0] == '') {
+            //keine doppelten Elemente
+            //$cnt_grpid   = count($akro_er_arr) - count(array_unique($akro_er_arr));
+            //$gMessage->show('Gefundene Gruppen-IDs!: '.$akro_grpid.'! : '.var_dump($akro_er_arr).' : '.$cnt_grpid.' : ', 'Endrunden Akrobatik');        
+          } else {
+            $akro_double = array_diff_key($akro_er_arr, array_unique($akro_er_arr));
+            $gMessage->show('Es wurden Akrobatikwiederholungen gefunden: '.implode("/",$akro_er_arr).' >> GruppenID: <b>'.implode(" & ",$akro_double).'</b> kommt mehrfach vor!', 'Endrunden Akrobatik');            
+          }      
+        }        
+      }
+      //AkroE1
+      if ($post_id == 'usf-70') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        }        
+      }
+      //AkroE2
+      if ($post_id == 'usf-151') {
+        if ($_POST[$post_id] != '') {
+          $akro_str = explode(":", $_POST[$post_id]);
+          $_POST[$post_id] = trim($akro_str[0]).' : '.trim($akro_str[1]); 
+        }        
+      }
+      // end: Akro pruefen
 
 			// Wert aus Feld in das User-Klassenobjekt schreiben
 			$returnCode = $user->setValue($field->getValue('usf_name_intern'), $_POST[$post_id]);
@@ -325,6 +1643,10 @@ $gDb->endTransaction();
 if($user->getValue('usr_id') == $gCurrentUser->getValue('usr_id'))
 {
     $gCurrentUser = $user;
+    //rmenken: add mail
+    $strMailtext = "Die Profildaten von ".$user->getValue('usr_login_name')." wurden bearbeitet!";    
+    mail('webmaster@drbv.de','OnlineStartbuch: Profilbearbeitung',$strMailtext,'From: webmaster@drbv.de');
+//    mail('geschaeftsstelle@drbv.de','Aktivenportal: Profilbearbeitung',$strMailtext,'From: webmaster@drbv.de');      
 }
 
 unset($_SESSION['profile_request']);
@@ -392,4 +1714,3 @@ else
     $gMessage->show($gL10n->get('SYS_SAVE_DATA'));
 }
 ?>
-

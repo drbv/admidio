@@ -211,6 +211,21 @@ class TableDate extends TableAccess
 				$value = $this->dbColumns['dat_description'];
 			}
         }
+      elseif($columnName == 'dat_notiz')
+      {
+        if(isset($this->dbColumns['dat_notiz']) == false)
+        {
+          $value = '';
+        }
+        elseif($format == 'plain')
+        {
+          $value = html_entity_decode(strStripTags($this->dbColumns['dat_notiz']), ENT_QUOTES, 'UTF-8');
+        }
+        else
+        {
+          $value = $this->dbColumns['dat_notiz'];
+        }
+      }
         else
         {
             $value = parent::getValue($columnName, $format);
@@ -230,7 +245,6 @@ class TableDate extends TableAccess
 				$value = $gL10n->get(admStrToUpper($value));
 			}
 		}
-
         return $value;
     }
 

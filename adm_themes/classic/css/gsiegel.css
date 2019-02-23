@@ -1,0 +1,74 @@
+/******************************************************************************
+ * Cascading-Style-Sheets-Datei um das Aussehen der Gütesiegelvalidierung 
+ * anzupassen
+ *
+ * Copyright    : (c) 2018 DRBV Team
+ * Homepage     : https://drbv.de
+ * License      : GNU Public License 2 http://www.gnu.org/licenses/gpl-2.0.html
+ *
+ * Diese CSS-Datei ist fuer das Layout der Gütesiegelvalidierung zustaendig.
+ *
+ *****************************************************************************/
+
+
+.bodyPrintResult {
+  color:            #000000;
+  font-family:      courier;
+  font-size:        10pt;
+  background-color: #ffffff;
+  text-align:       left;
+  margin:           20px;
+}
+
+.gsglMiniLogo {
+  display: block;
+  width:  130px;
+  height: 100px;
+  background: url(../images/guetesiegel_90x90.png) 10px 10px no-repeat;
+}
+.gsglUschrift {
+  display: block;
+  width:  200px;
+  height: 35px;
+  background: url(../images/kerber.png) -10px 1px no-repeat;
+}
+
+ul.checkboxList {
+  list-style-type:none;
+}
+
+ul.checkboxList li:before { 
+  content: "\2714" " ";
+  color:   #04B431;
+  font-size: 1.9em;
+}
+
+.chkboxSubItem {
+  display: block;
+  margin-left: 30px;
+}
+
+.chkboxTopItem {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.gsgltab {
+  border: 2px solid #04B431;
+}
+
+.gsgltabRed {
+  border: 2px solid red;
+}
+
+.gsglStatus {
+  color: #04B431;
+}
+
+.gsglStatusRed {
+  color: red;
+}
+
+.gsglNr {
+  color: grey;
+}

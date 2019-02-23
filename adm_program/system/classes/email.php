@@ -297,7 +297,7 @@ class Email extends PHPMailer
     {
         if (strlen($subject) > 0)
         {
-            //$this->emHeaderOptions['Subject'] = admEncodeMimeheader(stripslashes($subject));
+            $this->emHeaderOptions['Subject'] = admEncodeMimeheader(stripslashes($subject));
             $this->Subject = admEncodeMimeheader(stripslashes($subject));
             return true;
         }

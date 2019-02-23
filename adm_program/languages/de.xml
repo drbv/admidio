@@ -282,7 +282,7 @@
     <text id="DAT_ADD_DATE_TO_CALENDAR" development="new" translation="todo">Termin in den Kalender übernehmen</text>
     <text id="DAT_ADD_ROLE" development="new" translation="todo">Rolle hinzufügen</text>
     <text id="DAT_ALL_DAY" development="new" translation="todo">Ganztägig</text>
-    <text id="DAT_ASSIGN_PARTICIPANTS" development="new" translation="todo">Teilnehmer zuordnen</text>
+    <text id="DAT_ASSIGN_PARTICIPANTS" development="new" translation="todo">Teilnehmer an-/abmelden</text>
     <text id="DAT_ATTEND" development="new" translation="todo">Teilnehmen</text>
     <text id="DAT_ATTEND_DATE" development="new" translation="todo">Du hast deine Teilnahme für den Termin %VAR1_BOLD% am %VAR2% zugesagt.</text>
     <text id="DAT_CALENDAR" development="new" translation="todo">Kalender</text>
@@ -290,7 +290,7 @@
     <text id="DAT_CANCEL_DATE" development="new" translation="todo">Du hast deine Teilnahme für den Termin %VAR1_BOLD% am %VAR2% wieder abgesagt.</text>
     <text id="DAT_DATE" development="new" translation="todo">Termin</text>
     <text id="DAT_DATES" development="new" translation="todo">Termine</text>
-    <text id="DAT_DATES_DESC" development="new" translation="todo">Termine können hier angelegt und angeschaut werden. Benutzer können sich auf Wunsch zu diesen Terminen anmelden.</text>
+    <text id="DAT_DATES_DESC" development="new" translation="todo">Termine können hier angelegt (sofern die Rechte vorhanden sind) und angeschaut werden. Vereine und Nutzer können sich z.B. zu Turnierterminen anmelden.</text>
     <text id="DAT_EDIT_ROOMS" development="new" translation="todo">Räume bearbeiten</text>
     <text id="DAT_EDIT_ROOMS_DESC" development="new" translation="todo">Hier können Räume angelegt und bearbeitet werden.\n%VAR1% Alle nicht gespeicherten Organisationseinstellungen gehen dabei verloren.</text>
 	<text id="DAT_EMAIL_NOTIFICATION_TITLE" development="new" translation="todo">Ein neuer Termin wurde angelegt</text>
@@ -306,9 +306,10 @@
     <text id="DAT_ORGANIZER" description="The Person" development="new" translation="todo">Organisator</text>
     <text id="DAT_ORGANIZERS" description="The Personen" development="new" translation="todo">Organisatoren</text>
     <text id="DAT_PARTICIPANTS_LIMIT" development="new" translation="todo">Teilnehmerbegrenzung</text>
-    <text id="DAT_PREVIOUS_DATES" description="Vergangene Termine" development="new" translation="todo">Vergangene %VAR1%</text>
+    <text id="DAT_PREVIOUS_DATES" description="Vergangene Turniertermine" development="new" translation="todo">Vergangene %VAR1%</text>
     <text id="DAT_REGISTRATION_NOT_POSSIBLE" development="new" translation="todo">Keine Anmeldung mehr möglich.</text>
-    <text id="DAT_REMOVE_APPLICATION" development="new" translation="todo">Willst du die Anmeldung für den Termin wirklich entfernen? Hierbei werden alle bisherigen Teilnehmer gelöscht werden.</text>
+    <text id="DAT_REMOVE_APPLICATION" development="new" translation="todo">Die Anmeldung für den Termin kann nur durch einen Webmaster entfernt werden!</text>
+    <text id="DAT_REMOVE_APPLICATION_ORG" development="new" translation="todo">Willst du die Anmeldung für den Termin wirklich entfernen? Hierbei werden alle bisherigen Teilnehmer gelöscht werden.</text>
     <text id="DAT_ROOM_INFORMATIONS" development="new" translation="todo">Rauminformationen</text>
     <text id="DAT_ROOM_OVERHANG" development="new" translation="todo">Sind noch zusätzliche Plätze außer der oben angegebenen Sitzpätze zu vergeben, wie z.B. durch zusätzliche Stühle oder mögliche Stehplätze, so kann ihre Anzahl hier im Überhang angegeben werden.</text>
     <text id="DAT_ROOM_RESERVED" development="new" translation="todo">Der gewählte Raum ist zu dieser Zeit bereits reserviert.</text>
@@ -336,7 +337,7 @@
 	<text id="DOW_CREATE_FOLDER" development="new" translation="todo">Ordner anlegen</text>
 	<text id="DOW_CREATE_FOLDER_DESC" development="new" translation="todo">Den neuen Ordner im Ordner %VAR1_BOLD% anlegen.</text>
     <text id="DOW_DOWNLOADS" development="new" translation="todo">Downloads</text>
-    <text id="DOW_DOWNLOADS_DESC" development="new" translation="todo">Unterschiedliche Daten und Dateien können hier zum Download angeboten werden. Diese können in Ordnern mit individuellen Zugriffsrechten zusammengefasst werden.</text>
+    <text id="DOW_DOWNLOADS_DESC" development="new" translation="todo">Daten zum Download mit individuellen Zugriffsrechten. Anleitungen oder z.B. Turniermusik für Turnierleiter.</text>
 	<text id="DOW_EMAIL_NOTIFICATION_TITLE" development="new" translation="todo">Eine neue Datei wurde hochgeladen</text>
 	<text id="DOW_EMAIL_NOTIFICATION_MESSAGE" development="new" translation="todo">Es wurde eine neue Datei bei %VAR1% hochgeladen.\n\nDatei: %VAR2%\nAngelegt von: %VAR3%\nAngelegt am: %VAR4%</text>
     <text id="DOW_ENABLE_DOWNLOAD_MODULE" development="new" translation="todo">Downloadmodul aktivieren</text>
@@ -574,7 +575,7 @@
     <!-- Phrases only in Listsmodule -->
     <text id="LST_A_TO_Z" development="new" translation="todo">A bis Z</text>
     <text id="LST_ACTIVE_FORMER_MEMBERS" development="new" translation="todo">Aktive und ehemalige Mitglieder</text>
-    <text id="LST_ACTIVE_MEMBERS" development="new" translation="todo">Aktive Mitglieder</text>
+    <text id="LST_ACTIVE_MEMBERS" development="new" translation="todo">Teilnehmerliste</text>
     <text id="LST_ACTIVE_ROLES" development="new" translation="todo">Übersicht der aktiven Rollen</text>
     <text id="LST_ADD_ANOTHER_COLUMN" development="new" translation="todo">Weitere Spalte hinzufügen</text>
     <text id="LST_CATEGORY_NO_LISTS" development="new" translation="todo">Diese Kategorie enthält keine zur Ansicht freigegebenen Listen.</text>
@@ -605,7 +606,7 @@
     <text id="LST_KONFIGURATION_OWN_LIST" development="new" translation="todo">Konfiguration eigene Liste</text>
     <text id="LST_LIST" development="new" translation="todo">Liste</text>
     <text id="LST_LISTS" development="new" translation="todo">Listen</text>
-    <text id="LST_LISTS_DESC" development="new" translation="todo">Unterschiedliche Listen zu einzelnen Rollen können hier angezeigt werden. Außerdem können von den Benutzern individuelle Listen erstellt und gespeichert werden.</text>
+    <text id="LST_LISTS_DESC" development="new" translation="todo">Vereinslisten, Gremien (Wertungsrichter, Turnierleiter) und die Liste der vereinzugehörigen Startbücher können hier angezeigt werden.</text>
     <text id="LST_LIST_VIEW" development="new" translation="todo">Listenübersicht</text>
     <text id="LST_MAX" development="new" translation="todo">von max. %VAR1%</text>
     <text id="LST_MEMBERS_PER_PAGE" development="new" translation="todo">Anzahl Teilnehmer pro Seite</text>
@@ -657,6 +658,7 @@
     <text id="MAI_ACTIVATE_EMAIL_MODULE" development="new" translation="todo">Mailmodul aktivieren</text>
     <text id="MAI_ACTIVATE_EMAIL_MODULE_DESC" development="new" translation="todo">Das Mailmodul kann über diese Einstellung komplett deaktiviert werden. Es ist dann nicht mehr aufrufbar und wird auch in der Modulübersichtsseite nicht mehr angezeigt. Falls der Server keinen Mailversand unterstützt, sollte das Modul deaktiviert werden. (Standard: Aktiviert)</text>
     <text id="MAI_ADD_ATTACHEMENT" development="new" translation="todo">Anhang hinzufügen</text>
+    <text id="MAI_ADD_FOTO" development="new" translation="todo">Foto hinzufügen</text>
 	<text id="MAI_ATTACHEMENT" development="new" translation="todo">Anhang:</text>
     <text id="MAI_ATTACHMENT_SIZE" development="new" translation="todo">Maximale Dateigröße für Anhänge</text>
     <text id="MAI_ATTACHMENT_SIZE_DESC" development="new" translation="todo">Benutzer können nur Dateien anhängen, bei denen die Dateigröße kleiner als der hier angegebene Wert ist. Steht hier 0, so sind keine Anhänge im Mailmodul möglich. (Standard:1024KB)</text>
@@ -666,6 +668,13 @@
     <text id="MAI_COUNT_BCC" development="new" translation="todo">Anzahl der BCC Empfänger</text>
     <text id="MAI_EMAIL_DESC" development="new" translation="todo">E-Mails können an unterschiedliche Rollen, dies können Gruppen, Kurse oder Abteilungen sein, geschrieben werden.</text>
     <text id="MAI_MAX_ATTACHMENT_SIZE" development="new" translation="todo">Du kannst beliebig viele Anhänge hinzufügen. Allerdings darf die Dateigröße aller Anhänge zusammen %VAR1% MB nicht überschreiten.</text>
+    <text id="MAI_MAX_SPORTTGLKT_SIZE" development="new" translation="todo">Du kannst mehrere Sporttauglichkeitsnachweise hinzufügen. Allerdings darf die Dateigröße aller Anhänge (PDF-Format) zusammen %VAR1% MB nicht überschreiten.</text>
+    <text id="MAI_ADD_LIZTRAIN" development="new" translation="todo">Für externe Trainer mit Lizenz bitte eine Lizenzkopie mit anfügen.</text>
+    <text id="MAI_ADD_KOOP" development="new" translation="todo">Zum Nachweis der Kooperation zwischen Verein und Schule kann ein Kooperationsvertrag angefügt werden oder alternativ eine Webseite des Vereins/Schule, aus dem die Zusammenarbeit erkennbar ist.</text>
+    <text id="MAI_ADD_WORKSHOP" development="new" translation="todo">Zum Nachweis offener Workshops bitte eine Webseite des Vereins mit dem entsprechenden Angebot angeben.</text>
+    <text id="MAI_ADD_SPORTANGEBOTE" development="new" translation="todo">Zum Nachweis sportartübergreifender Sportangebote bitte eine Webseite des Vereins mit dem entsprechenden Angebot angeben.</text>
+    <text id="MAI_INFO_GSIEGEL" development="new" translation="todo">Der Zeitraum zur Beantragung des Gütesiegels liegt in der zweiten Jahreshälfte von Juli-Dezember eines Jahres, damit die entsprechenden Mitgliederzahlen und Statistiken auch vorliegen.</text>
+    <text id="MAI_MAX_FOTO_SIZE" development="new" translation="todo">Die Dateigröße des Fotos sollte %VAR1% MB nicht überschreiten.</text>
     <text id="MAI_ROLE_NO_EMAILS" development="new" translation="todo">Die von dir ausgewählte Rolle enthält keine Mitglieder mit gültigen E-Mail-Adressen, an die eine E-Mail versendet werden kann!</text>
     <text id="MAI_SEND_COPY" development="new" translation="todo">Kopie der E-Mail an mich senden</text>
     <text id="MAI_SEND_EMAIL" development="new" translation="todo">E-Mail senden</text>
@@ -948,8 +957,13 @@
 	<text id="PRO_LOGIN_NAME_EXIST" development="new" translation="todo">Der gewählte Benutzername existiert schon.\n\nWähle bitte einen anderen Namen.</text>
 	<text id="PRO_MAINTAIN_PROFILE_FIELDS" development="new" translation="todo">Profilfelder pflegen</text>
 	<text id="PRO_MAINTAIN_PROFILE_FIELDS_DESC" development="new" translation="todo">In der Profilfeldpflege können Profilfelder angelegt und bearbeitet werden. Diese können dann in Kategorien zusammengefasst werden.\n%VAR1% Alle nicht gespeicherten Organisationseinstellungen gehen dabei verloren.</text>
+  <text id="PRO_MY_FORMS" development="new" translation="todo">Formulare</text>
+  <text id="PRO_MY_FORMS_DESC" development="new" translation="todo">Formulare zur Bestellung/Änderung von Startbüchern/Startkarten und Startmarken.</text>
+  <text id="PRO_MY_MUSIKDB" development="new" translation="todo">Musikdatenbank</text>
+  <text id="PRO_MY_MUSIKDB_DESC" development="new" translation="todo">Musikdatenbank für Turnierleiter zur Turniermusikauswahl.</text>
+  <text id="PRO_ADMIN_MUSIKDB" development="new" translation="todo">Administration</text>
 	<text id="PRO_MY_PROFILE" development="new" translation="todo">Mein Profil</text>
-    <text id="PRO_MY_PROFILE_DESC" development="new" translation="todo">Das eigene Benutzerprofil kann hier angeschaut und bearbeitet werden.</text>
+  <text id="PRO_MY_PROFILE_DESC" development="new" translation="todo">Das eigene Benutzer- bzw. Vereinsprofil kann hier angeschaut und bearbeitet werden.</text>
 	<text id="PRO_NEW_PASSWORD" development="new" translation="todo">Neues Passwort</text>
 	<text id="PRO_NEW_PICTURE" development="new" translation="todo">Neues Profilfoto</text>
 	<text id="PRO_PASSWORD_CHANGED" development="new" translation="todo">Das Passwort wurde erfolgreich geändert.</text>
@@ -1174,7 +1188,7 @@
     <text id="SYS_FILE_TO_LARGE" development="new" translation="todo">Datei ist zu groß.</text>
     <text id="SYS_FILE_TO_LARGE_SERVER" development="new" translation="todo">Die hochgeladene Datei übersteigt die vom Server zugelassene Dateigröße von %VAR1%.</text>
 	<text id="SYS_FILE_UPLOADS" development="new" translation="todo">Dateiuploads</text>
-	<text id="SYS_FIRSTNAME" development="new" translation="todo">Vorname</text>
+  <text id="SYS_FIRSTNAME" development="new" translation="todo">Vorname/Vereinskurzform</text>
 	<text id="SYS_FROM_TO" development="new" translation="todo">vom %VAR1% bis %VAR2%</text>
 	<text id="SYS_FOLDER" development="new" translation="todo">Ordner</text>
     <text id="SYS_FOLDER_NOT_CREATED" description="Var2 und Var3 erzeugen den MailTo-Link" development="new" translation="todo">Der Ordner %VAR1_BOLD% kann nicht angelegt werden.\n\nWende dich bitte an den %VAR2%Webmaster%VAR3%, damit dieser die Schreibrechte des übergeordneten Ordners prüfen kann.</text>
@@ -1212,7 +1226,7 @@
     <text id="SYS_ISO_8859_1" development="new" translation="todo">ISO-8859-1</text>
     <text id="SYS_LANGUAGE" development="new" translation="todo">Sprache</text>
     <text id="SYS_LAST_EDITED_BY" development="new" translation="todo">Zuletzt bearbeitet von %VAR1% am %VAR2%</text>
-	<text id="SYS_LASTNAME" development="new" translation="todo">Nachname</text>
+  <text id="SYS_LASTNAME" development="new" translation="todo">Nachname/Startbuchnr</text>
     <text id="SYS_LATER" development="new" translation="todo">Später</text>
     <text id="SYS_LEADER" development="new" translation="todo">Leiter</text>
     <text id="SYS_LINK_TO" development="new" translation="todo">Link auf %VAR1%</text>
@@ -1377,5 +1391,8 @@
     <text id="SYS_WEDNESDAY" development="new" translation="todo">Mittwoch</text>
     <text id="SYS_WHAT_TO_DO" development="new" translation="todo">Was ist zu tun?</text>
     <text id="SYS_YES" development="new" translation="todo">Ja</text>
+    <text id="DRBV_SPTGK" development="new" translation="todo">Datum der letzten Sporttauglichkeit:\n%VAR1%\n%VAR2%</text>    
+    <text id="DRBV_SPTGK_INF" development="new" translation="todo">Datum der letzten Sporttauglichkeit eintragen und den Abschnitt G (Beurteilung) als PDF oder JPG Datei anfügen.</text>    
+    <text id="DRBV_FOTO_INF" development="new" translation="todo">JPG Datei 640px x 512px (5:4 1.25). Die Datei sollte zwischen 200KB und 500KB gross sein.</text>
 </version>
 </language>

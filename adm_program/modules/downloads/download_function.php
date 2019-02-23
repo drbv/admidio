@@ -35,17 +35,18 @@ if ($gPreferences['enable_download_module'] != 1)
     $gMessage->show($gL10n->get('SYS_MODULE_DISABLED'));
 }
 
-// erst pruefen, ob der User auch die entsprechenden Rechte hat
-if (!$gCurrentUser->editDownloadRight())
-{
-    $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
-}
-        
 // Initialize and check the parameters
 $getMode     = admFuncVariableIsValid($_GET, 'mode', 'numeric', null, true);
 $getFolderId = admFuncVariableIsValid($_GET, 'folder_id', 'numeric', 0);
 $getFileId   = admFuncVariableIsValid($_GET, 'file_id', 'numeric', 0);
 $getName     = admFuncVariableIsValid($_GET, 'name', 'string');
+$rm_file_exists = false;
+
+// erst pruefen, ob der User auch die entsprechenden Rechte hat
+if (!$gCurrentUser->editDownloadRight() && $getFolderId != 148)//rm folder 148 aktivenliste immer die Rechte geben
+{
+    $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
+}
 
 $_SESSION['download_request'] = $_POST;
 
@@ -121,10 +122,13 @@ if ($getMode == 1)
         }
     }
 
-    if (file_exists($targetFolder->getCompletePathOfFolder(). '/'.$file_name))
-    {
+    if (file_exists($targetFolder->getCompletePathOfFolder(). '/'.$file_name)){
+      $rm_file_exists = true;
+      //rm: in case of folder id=148 AktivenListe overwrite is OK
+      if($targetFolder->getValue('fol_id') != 148){
         $gMessage->show($gL10n->get('DOW_FILE_EXIST', $file_name));
     }
+    }  
 
     $file_description = $_POST['new_description'];
 
@@ -132,6 +136,7 @@ if ($getMode == 1)
     if(move_uploaded_file($_FILES['userfile']['tmp_name'], $targetFolder->getCompletePathOfFolder(). '/'.$file_name))
     {
         //Neue Datei noch in der DB eintragen
+        if(!$rm_file_exists){//rm: doppelten Eintrag vermeiden, bei overwrite
         $newFile = new TableFile($gDb);
         $newFile->setValue('fil_fol_id',$targetFolder->getValue('fol_id'));
         $newFile->setValue('fil_name',$file_name);
@@ -139,7 +144,7 @@ if ($getMode == 1)
         $newFile->setValue('fil_locked',$targetFolder->getValue('fol_locked'));
         $newFile->setValue('fil_counter','0');
         $newFile->save();
-		
+	}	
 		// Benachrichtigungs-Email für neue Einträge        
         if($file_description!='')
         {

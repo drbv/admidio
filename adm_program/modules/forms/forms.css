@@ -1,0 +1,24 @@
+/******************************************************************************
+ * Spezielle Cascading-Style-Sheets-Datei nur fuer das Formular-Modul
+ *
+ * Copyright    : (c) 2016 DRBV Webteam
+ * Homepage     : http://www.drbv.de
+ * License      : GNU Public License 2 http://www.gnu.org/licenses/gpl-2.0.html
+ *
+ * Mit dieser CSS-Datei koennen Sie die spezifischen Anpassungen fuer das
+ * Formular-Modul bearbeiten. Dies sind keine Admidio-Standard-CSS-Klassen.
+ *
+ *****************************************************************************/
+
+.formlabel {
+  font-size:60%;
+}
+
+.hinweis {
+  color:red;
+}
+
+input[readonly='readonly'] {
+  color:grey;
+  background-color:#FFF7C0;
+}

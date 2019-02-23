@@ -16,6 +16,7 @@
  *****************************************************************************/
 
 require_once('../../system/common.php');
+require_once('../../system/drbv_database.php');
 require_once('../../system/login_valid.php');
 require_once('../../system/classes/ckeditor_special.php');
 require_once('../../system/classes/form_elements.php');
@@ -27,6 +28,54 @@ require_once('../../system/classes/table_roles.php');
 $getDateId   = admFuncVariableIsValid($_GET, 'dat_id', 'numeric', 0);
 $getHeadline = admFuncVariableIsValid($_GET, 'headline', 'string', $gL10n->get('DAT_DATES'));
 $getCopy     = admFuncVariableIsValid($_GET, 'copy', 'boolean', 0);
+
+// print_r($_POST);echo"<br>";
+
+// define arrays for Turnierleiter and Turnierform
+// Turnierleiter aus Datenbank lesen
+
+$tleiter_org = array();
+
+$sqlab = "SELECT mem_usr_id FROM adm_members WHERE mem_rol_id = 101";
+    
+$turnier_leiter = mysqli_query(ADMIDIOdb(), $sqlab);
+$x = 1;
+while($temp=mysqli_fetch_array($turnier_leiter))
+   {
+     $t_leiter_id = $temp[0];
+     $sqlab = "SELECT usd_usf_id, usd_value FROM adm_user_data WHERE usd_usr_id = $t_leiter_id";
+     $ergebnis=mysqli_query(ADMIDIOdb(), $sqlab);
+     while($name=mysqli_fetch_array($ergebnis))
+           {
+            $temp_id = $name[0];
+            $temp_name = $name[1];
+            if($temp_id == 1)
+               $n_name = $temp_name;
+            if($temp_id == 2)
+               $v_name = $temp_name;
+           }   
+           
+    $tleiter_org[$x] = utf8_encode($n_name) . " " . utf8_encode($v_name);
+    $x = $x + 1;         
+   }
+natsort($tleiter_org);
+
+$tleiter = array();
+$x = 1;
+foreach($tleiter_org as $leiter_drehen)
+       {
+         $ungedreht = explode(" ", $leiter_drehen);
+         
+          if($ungedreht[2])
+               $tleiter[$x] = $ungedreht[1] . " " . $ungedreht[2] . " " . $ungedreht[0];
+         else           
+            $tleiter[$x] = $ungedreht[1] . " " . $ungedreht[0];
+        $x = $x + 1; 
+        } 
+
+$tform = array(1 => 'Breitensportwettbewerb', 'Sportturnier', 'Nord-Cup', 'Süd-Cup', 'Offene Landesmeisterschaft', 'Geschlossene Landesmeisterschaft', 'Einladungsturnier', 'Ranglistenturnier', 'Qualifikationsturnier', 'Deutsche Meisterschaft', 'Europameisterschaft', 'Weltmeisterschaft', 'Continental Meisterschaft', 'World Master', 'World Cup');
+$tform_international = array(0 => 'National', 1 => 'International');
+$tform_cupserie = array(1 => 'Nord-Cup', 'Süd-Cup');  
 
 // pruefen ob das Modul ueberhaupt aktiviert ist
 if ($gPreferences['enable_dates_module'] == 0)
@@ -266,8 +315,13 @@ $gLayout['header'] = '
 		$gLayout['header'] .= '
 		// if date participation should be removed than ask user
 		$("#admButtonSave").click(function () {
-			if(dateRoleID > 0 && $("#dateRegistrationPossible").is(":checked") == false) {
-				var msg_result = confirm("'.$gL10n->get('DAT_REMOVE_APPLICATION').'");
+      if(dateRoleID > 0 && $("#dateRegistrationPossible").is(":checked") == false) {';
+      if($gCurrentUser->isWebmaster()){
+        $gLayout['header'] .= 'var msg_result = confirm("'.$gL10n->get('DAT_REMOVE_APPLICATION_ORG').'");';
+      } else {
+        $gLayout['header'] .= 'var msg_result = confirm("'.$gL10n->get('DAT_REMOVE_APPLICATION').'");';      
+      }  
+        $gLayout['header'] .= '
 				if(msg_result) {
 					$("#formDate").submit();
 				}
@@ -281,6 +335,30 @@ $gLayout['header'] = '
 
 require(SERVER_PATH. '/adm_program/system/overall_header.php');
  
+// Vereinsname eintragen
+
+// Verein suchen
+if($date->getValue('dat_vereinsnummer'))
+  {
+//   echo $date->getValue('dat_vereinsnummer');
+   $sqlab = "SELECT usr_id FROM adm_users WHERE usr_login_name = " . $date->getValue('dat_vereinsnummer');
+    
+   $verein = mysqli_query(ADMIDIOdb(), $sqlab);
+   $temp = mysqli_fetch_row($verein);
+   $id = $temp[0];
+//   echo"<br>$id<br>";
+    
+    // Vereinsdaten auslesen
+    $sqlab = "SELECT usd_value FROM adm_user_data WHERE usd_usr_id = $id AND usd_usf_id = 28";
+    
+    $daten = mysqli_query(ADMIDIOdb(), $sqlab);
+    $temp = mysqli_fetch_row($daten);
+  //  $vereinsname = $temp[0];
+    $date->setValue('dat_verein', $temp[0]);
+//    echo"$vereinsname<br>";
+  }
+  
+  
 // Html des Modules ausgeben
 echo '
 <form method="post" id="formDate" action="'.$g_root_path.'/adm_program/modules/dates/dates_function.php?dat_id='.$getDateId.'&amp;mode=1">
@@ -299,16 +377,55 @@ echo '
 						<dl>
 							<dt><label for="dat_headline">'.$gL10n->get('SYS_TITLE').':</label></dt>
 							<dd>
-								<input type="text" id="dat_headline" name="dat_headline" style="width: 90%;" maxlength="100" value="'. $date->getValue('dat_headline'). '" />
+                <input type="text" id="dat_headline" name="dat_headline" style="width: 90%;" maxlength="50" value="'. $date->getValue('dat_headline'). '" />
 								<span class="mandatoryFieldMarker" title="'.$gL10n->get('SYS_MANDATORY_FIELD').'">*</span>
 							</dd>
 						</dl>
 					</li>
 					<li>
+            <dl>
+              <dt><label for="dat_location_wo">Örtlichkeit:</label></dt>
+              <dd>
+                <input type="text" id="dat_location_wo" name="dat_location_wo" style="width: 90%;" maxlength="99" value="'. $date->getValue('dat_location_wo'). '" />                
+              </dd>
+            </dl>
+          </li>
+          <li>
+            <dl>
+              <dt><label for="dat_location_str">Strasse Nr.:</label></dt>
+              <dd>
+                <input type="text" id="dat_location_str" name="dat_location_str" style="width: 90%;" maxlength="99" value="'. $date->getValue('dat_location_str'). '" />                
+              </dd>
+            </dl>
+          </li>
+          <li>
+            <dl>
+              <dt><label for="dat_location_plz">Postleitzahl:</label></dt>
+              <dd>
+                <input type="text" id="dat_location_plz" name="dat_location_plz" style="width: 90%;" maxlength="10" value="'. $date->getValue('dat_location_plz'). '" />                
+              </dd>
+            </dl>
+          </li>                                      
+          <li>
+            <dl>
+              <dt><label for="dat_location_ort">Stadt:</label></dt>
+              <dd>
+                <input type="text" id="dat_location_ort" name="dat_location_ort" style="width: 90%;" maxlength="99" value="'. $date->getValue('dat_location_ort'). '" />                
+              </dd>
+            </dl>
+          </li>';
+
+// dat_location wird durch einzelne Felder ersetzt.
+// der DB wert dat_location in der dates function aber beschrieben durch die neuen felder
+// feld und li elem auf hidden gesetzt, da sonst dat_location nicht geschrieben wird und 
+// die form sonst hängt
+/*
+          echo '
+          <li style="visibility: hidden;">
 						<dl>
 							<dt><label for="dat_location">'.$gL10n->get('DAT_LOCATION').':</label></dt>
 							<dd>
-								<input type="text" id="dat_location" name="dat_location" style="width: 90%;" maxlength="50" value="'. $date->getValue('dat_location'). '" />';
+              <input type="hidden" id="dat_location" name="dat_location" style="width: 90%;" maxlength="99" value="'. $date->getValue('dat_location'). '" />';
 								if($gPreferences['dates_show_map_link'])
 								{
 									echo '<a rel="colorboxHelp" href="'. $g_root_path. '/adm_program/system/msg_window.php?message_id=DAT_LOCATION_LINK&amp;inline=true"><img 
@@ -318,7 +435,22 @@ echo '
 							echo '</dd>
 						</dl>
 					</li>';
+*/ 
 
+// Thomas 13.13.15
+          echo'
+          <li>
+            <dl>
+              <dt><label for="dat_location">Wo:</label></dt>
+              <dd>
+               ' . $date->getValue('dat_location'). '&nbsp    
+              </dd>
+            </dl>
+          </li>';
+?>
+<input type="hidden" id="dat_location" name="dat_location" style="width: 90%;" maxlength="99" value=" " />
+<?php 
+// End Thomas                 
 					if($gPreferences['dates_show_map_link'])
 					{
 						if(strlen($date->getValue('dat_country')) == 0 && $getDateId == 0)
@@ -345,7 +477,6 @@ echo '
 							</dl>
 						</li>';
 					}
-
 					if($gPreferences['dates_show_rooms']==1) //nur wenn Raumauswahl aktiviert ist
 					{
 						echo'<li>
@@ -388,7 +519,6 @@ echo '
 				<a class="iconShowHide" href="javascript:showHideBlock(\'admPeriodCalendarBody\', \''.$gL10n->get('SYS_FADE_IN').'\', \''.$gL10n->get('SYS_HIDE').'\')"><img
 				id="admPeriodCalendarBodyImage" src="'. THEME_PATH. '/icons/triangle_open.gif" alt="'.$gL10n->get('SYS_HIDE').'" title="'.$gL10n->get('SYS_HIDE').'" /></a>'.$gL10n->get('SYS_PERIOD').' & '.$gL10n->get('DAT_CALENDAR').'
 			</div>
-
 			<div class="groupBoxBody" id="admPeriodCalendarBody">
 				<ul class="formFieldList">
 					<li>
@@ -445,8 +575,463 @@ echo '
 								'.FormElements::generateCategorySelectBox('DAT', $date->getValue('dat_cat_id'), 'dat_cat_id').'
 								<span class="mandatoryFieldMarker" title="'.$gL10n->get('SYS_MANDATORY_FIELD').'">*</span>
 							</dd>
+              <dd>
+                    <br><b>Turnierkalender national:</b> Nationale Turniere
+                    <br><b>Turnierkalender international:</b> Internationale Turniere       
+              </dd>
+              <dd>
+                    <b>Sitzungskalender:</b> Alle Sitzungen    
+              </dd>
+              <dd>
+                    <b>Veranstaltungskalender:</b> <br> Vereinsveranstaltungen / Workshops / Vereinsseminare
+              </dd>     
+              <dd>
+                    <b>Schulungskalender:</b><br> DRBV-Schulungen / WRRC-Schulungen <br>Lizenzmaßnahmen / Kadertraining DRBV    
+              </dd>     
+            </dl>
+          </li>';                   
+    echo '   
+        </ul>
+      </div>
+    </div>';
+
+  echo '
+    <div class="groupBox" id="admTurnierCalendar">
+      <div class="groupBoxHeadline" id="admTurnierCalendarHead">
+        <a class="iconShowHide" href="javascript:showHideBlock(\'admTurnierCalendarBody\', \''.$gL10n->get('SYS_FADE_IN').'\', \''.$gL10n->get('SYS_HIDE').'\')"><img
+        id="admPeriodTurnierBodyImage" src="'. THEME_PATH. '/icons/triangle_open.gif" alt="'.$gL10n->get('SYS_HIDE').'" title="'.$gL10n->get('SYS_HIDE').'" /></a>DRBV Turnierinformation
+      </div>
+      <div class="groupBoxBody" id="admTurnierCalendarBody">
+        <ul class="formFieldList">';
+
+         echo'<select name="Art">';
+              if($date->getValue('Art') == "1")
+                 echo'<option value="1" selected>Sportturnier</option>';
+              else
+                 echo'<option value="1" >Sportturnier</option>';
+              if($date->getValue('Art') == "2")                 
+                 echo'<option value="2" selected>Breitensportwettbewerb</option>';
+              else
+                 echo'<option value="2">Breitensportwettbewerb</option>';
+         echo"</select>";         
+               
+            $jahr = date("Y");
+            $jahr_kurz = date("y");
+            $jahr1 = $jahr + 1;
+            $jahr1_kurz = $jahr_kurz + 1;            
+            $jahr2 = $jahr + 2;
+            $jahr2_kurz = $jahr_kurz + 2;
+                 
+         echo'<select name="jahr">';
+              if($_SESSION['dates_request']['jahr'] == 0000)
+                 echo'<option value="0000" selected>0000</option>';
+              else
+                 echo'<option value="0000">0000</option>';
+              if($_SESSION['dates_request']['jahr'] == $jahr_kurz)
+                 echo'<option value="' . $jahr_kurz . '" selected>' . $jahr . '</option>';
+              else
+                 echo'<option value="' . $jahr_kurz . '">' . $jahr . '</option>';
+              if($date->getValue('jahr') == "$jahr1_kurz")
+                 echo'<option value="' . $jahr1_kurz . '" selected>' . $jahr1 . '</option>';
+              else
+                 echo'<option value="' . $jahr1_kurz . '">' . $jahr1 . '</option>';  
+              if($date->getValue('jahr') == "$jahr2_kurz")
+                 echo'<option value="' . $jahr2_kurz . '" selected>' . $jahr2 . '</option>';
+              else
+                 echo'<option value="' . $jahr2_kurz . '">' . $jahr2 . '</option>';                 
+         echo"</select>";  
+
+         echo'<select name="monat" onchange="submit();">';
+              if($date->getValue('monat') == "00")
+                 echo'<option value="00" selected>0</option>';
+              else
+                 echo'<option value="00">0</option>';
+              if($date->getValue('monat') == "01")
+                 echo'<option value="01" selected>1</option>';
+              else
+                 echo'<option value="01">1</option>';
+              if($date->getValue('monat') == "02")
+                 echo'<option value="02" selected>2</option>';
+              else
+                 echo'<option value="02">2</option>';  
+              if($date->getValue('monat') == "3")
+                 echo'<option value="03" selected>3</option>';
+              else
+                 echo'<option value="03">3</option>';
+              if($date->getValue('monat') == "4")
+                 echo'<option value="04" selected>4</option>';
+              else
+                 echo'<option value="04">4</option>';
+              if($date->getValue('monat') == "5")
+                 echo'<option value="05" selected>5</option>';
+              else
+                 echo'<option value="05">5</option>';
+              if($date->getValue('monat') == "6")
+                 echo'<option value="06" selected>6</option>';
+              else
+                 echo'<option value="06">6</option>';  
+              if($date->getValue('monat') == "7")
+                 echo'<option value="07" selected>7</option>';
+              else
+                 echo'<option value="07">7</option>';
+              if($date->getValue('monat') == "8")
+                 echo'<option value="08" selected>8</option>';
+              else
+                 echo'<option value="08">8</option>';                 
+              if($date->getValue('monat') == "9")
+                 echo'<option value="09" selected>9</option>';
+              else
+                 echo'<option value="09">9</option>';
+              if($date->getValue('monat') == "10")
+                 echo'<option value="10" selected>10</option>';
+              else
+                 echo'<option value="10">10</option>';  
+              if($date->getValue('monat') == "11")
+                 echo'<option value="11" selected>11</option>';
+              else
+                 echo'<option value="11">11</option>';
+              if($date->getValue('monat') == "12")
+                 echo'<option value="12" selected>12</option>';
+              else
+                 echo'<option value="12">12</option>';                                                 
+         echo"</select>";
+              // echo"Session" . $_SESSION['$neue_tn'];         
+         if(!$date->getValue('dat_turniernummer'))
+           { 
+         echo '          
+          <li>
+            <dl>
+              <dt><label for="dat_turniernummer">Turniernummer:</label></dt>
+              <dd>';                     
+                echo'<input type="text" id="dat_turniernummer" name="dat_turniernummer" style="width: 30%;" maxlength="10" value="' . $_SESSION['$neue_tn'] . '" />';                        
+           }
+         else
+           { 
+          echo '
+          <li>
+            <dl>
+              <dt><label for="dat_turniernummer">Turniernummer:</label></dt>
+              <dd>
+                <input type="text" id="dat_turniernummer" name="dat_turniernummer" style="width: 30%;" maxlength="10" value="'. $date->getValue('dat_turniernummer'). '" />';
+           } 
+            echo '         
+              </dd>
 						</dl>
 					</li>
+    <li id="admDateTL">
+            <dl>
+              <dt><label for="dat_tl">Turnierleiter:</label></dt>
+              <dd>
+                <select size="1" id="dat_tl" name="dat_tl">
+                  <option value="">- '.$gL10n->get('SYS_PLEASE_CHOOSE').' -</option>';
+                  foreach( $tleiter as $key => $value)
+                    {
+                      echo '<option value="'.$value.'" ';
+                      if($value == $date->getValue('dat_tl'))
+                      {
+                        echo ' selected="selected" ';
+                      }
+                      echo '>'.$value.'</option>';
+                    }
+                  echo '</select>
+              </dd>
+            </dl>
+          </li>';
+            echo '<li id="admDateTFORM">
+            <dl>
+              <dt><label for="dat_tform">Turnierform:</label></dt>
+              <dd>
+                <select size="1" id="dat_tform" name="dat_tform">
+                  <option value="">- '.$gL10n->get('SYS_PLEASE_CHOOSE').' -</option>';
+                  foreach( $tform as $key => $value)
+                    {
+                      echo '<option value="'.$value.'" ';
+                      if($value == $date->getValue('dat_tform'))
+                      {
+                        echo ' selected="selected" ';
+                      }
+                      echo '>'.$value.'</option>';
+                    }
+                  echo '</select>
+              </dd>
+            </dl>
+          </li>';
+            echo '<li id="admDateTFORMINT">
+            <dl>
+              <dt><label for="dat_tform_international">Turnierart:</label></dt>
+              <dd>
+                <select size="1" id="dat_tform_international" name="dat_tform_international">';
+                  foreach( $tform_international as $key => $value)
+                    {
+                      echo '<option value="'.$value.'" ';
+                      if($value == $date->getValue('dat_tform_international'))
+                      {
+                        echo ' selected="selected" ';
+                      }
+                      echo '>'.$value.'</option>';
+                    }
+                  echo '</select>
+              </dd>
+            </dl>
+          </li>'; 
+            echo '<li id="admDateTFORMCUP">
+            <dl>
+              <dt><label for="dat_tform_cupserie">Cup-Serie:</label></dt>
+              <dd>
+                <select size="1" id="dat_tform_cupserie" name="dat_tform_cupserie">
+                  <option value="">- '.$gL10n->get('SYS_PLEASE_CHOOSE').' -</option>';
+                  foreach( $tform_cupserie as $key => $value)
+                    {
+                      echo '<option value="'.$value.'" ';
+                      if($value == $date->getValue('dat_tform_cupserie'))
+                      {
+                        echo ' selected="selected" ';
+                      }
+                      echo '>'.$value.'</option>';
+                    }
+                  echo '</select>
+                </dd>
+              </dl>
+            </li>';
+                echo '<li>
+                <dl>
+                    <dt><label for="dat_skl">Startklasse RR:</label></dt>
+                     <dd>
+                      <input type="checkbox" id="dat_sk_s" name="dat_sk_s" ';
+                      if($date->getValue('dat_sk_s') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" /><label for="dat_sk_s">S-Klasse</label>
+                      <input type="checkbox" id="dat_sk_j" name="dat_sk_j" ';
+                      if($date->getValue('dat_sk_j') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />              
+                      <label for="dat_sk_j">J-Klasse</label>
+                      <input type="checkbox" id="dat_sk_c" name="dat_sk_c" ';
+                      if($date->getValue('dat_sk_c') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />              
+                      <label for="dat_sk_c">C-Klasse</label>
+                      <input type="checkbox" id="dat_sk_b" name="dat_sk_b" ';
+                      if($date->getValue('dat_sk_b') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />              
+                      <label for="dat_sk_b">B-Klasse</label>
+                      <input type="checkbox" id="dat_sk_a" name="dat_sk_a" ';
+                      if($date->getValue('dat_sk_a') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />              
+                      <label for="dat_sk_a">A-Klasse</label>            
+                    </dd>
+                </dl>
+            </li>';
+            echo '<li>
+                <dl>
+                    <dt><label for="dat_skl">Startklasse BW:</label></dt>
+                    <dd>
+                      <input type="checkbox" id="dat_sk_bwh" name="dat_sk_bwh" ';
+                      if($date->getValue('dat_sk_bwh') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />                    
+                      <label for="dat_sk_bwh">BW-Hauptklasse A</label>
+                      <input type="checkbox" id="dat_sk_bwo" name="dat_sk_bwo" ';
+                      if($date->getValue('dat_sk_bwo') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />                    
+                      <label for="dat_sk_bwo">BW-Oldieklasse A</label>
+                      <input type="checkbox" id="dat_sk_bwj" name="dat_sk_bwj" ';
+                      if($date->getValue('dat_sk_bwj') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />                    
+                      <label for="dat_sk_bwj">BW-Jugendklasse</label>
+                   </dd>
+                   <dd>
+                      <input type="checkbox" id="dat_sk_bwh_b" name="dat_sk_bwh_b" ';
+                      if($date->getValue('dat_sk_bwh_b') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />                    
+                      <label for="dat_sk_bwh_b">BW-Hauptklasse B</label>
+                      <input type="checkbox" id="dat_sk_bwo_b" name="dat_sk_bwo_b" ';
+                      if($date->getValue('dat_sk_bwo_b') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />                    
+                      <label for="dat_sk_bwo">BW-Oldieklasse B</label>
+
+                   </dd>
+
+                </dl>
+            </li>';
+            echo '<li>
+                <dl>
+                    <dt><label for="dat_skl">Startklasse Formation:</label></dt>
+                    <dd>
+                      <input type="checkbox" id="dat_sk_frm" name="dat_sk_frm" ';
+                      if($date->getValue('dat_sk_frm') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />                    
+                      <label for="dat_sk_frm">Master RR</label>
+                      <input type="checkbox" id="dat_sk_frj" name="dat_sk_frj" ';
+                      if($date->getValue('dat_sk_frj') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />                    
+                      <label for="dat_sk_frj">Jugend RR</label>
+                      <input type="checkbox" id="dat_sk_frl" name="dat_sk_frl" ';
+                      if($date->getValue('dat_sk_frl') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />                    
+                      <label for="dat_sk_frl">Lady RR</label>
+                      <input type="checkbox" id="dat_sk_frg" name="dat_sk_frg" ';
+                      if($date->getValue('dat_sk_frg') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />                    
+                      <label for="dat_sk_frg">Girl RR</label>                        
+                   </dd>
+                   <dd>
+                      <input type="checkbox" id="dat_sk_frs" name="dat_sk_frs" ';
+                      if($date->getValue('dat_sk_frs') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />                    
+                      <label for="dat_sk_frs">Showteam RR</label>                                                                        
+                      <input type="checkbox" id="dat_sk_fbm" name="dat_sk_fbm" ';
+                      if($date->getValue('dat_sk_fbm') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />                    
+                      <label for="dat_sk_fbm">Master BW</label>                                   
+                   </dd>     
+                </dl>
+            </li>';
+          echo '<li>
+                <dl>
+                    <dt><label for="dat_quali">Qualifikation gefordert:</label></dt>
+                     <dd>
+                      <input type="checkbox" id="dat_quali" name="dat_quali" ';
+                      if($date->getValue('dat_quali') == 1)
+                      {
+                        echo ' checked="checked" ';
+                      }
+                      echo ' value="1" />
+                        <label for="dat_quali">ja</label>           
+                    </dd>
+                </dl>
+            </li>';  
+//          echo '<li>
+//                <dl>
+//                    <dt><label for="dat_sk_bsp">Breitensport:</label></dt>
+//                     <dd>
+//                      <input type="checkbox" id="dat_sk_bsp" name="dat_sk_bsp" ';
+//                      if($date->getValue('dat_sk_bsp') == 1)
+//                      {
+//                        echo ' checked="checked" ';
+//                      }
+//                      echo ' value="1" />
+//                        <label for="dat_sk_bsp">ja</label>           
+//                    </dd>
+//                </dl>
+//            </li>';
+          echo '<li>
+            <dl>
+              <dt><label for="dat_ansprechpartner">Ansprechpartner:</label></dt>
+              <dd>
+                <input type="text" id="dat_ansprechpartner" name="dat_ansprechpartner" style="width: 90%;" maxlength="100" value="'. $date->getValue('dat_ansprechpartner'). '" />            
+              </dd>
+            </dl>
+          </li>';        
+          echo '<li>
+            <dl>
+              <dt><label for="dat_ansprechpartner_anschrift">Ansprechpartner Anschrift:</label></dt>
+              <dd>
+                <input type="text" id="dat_ansprechpartner_anschrift" name="dat_ansprechpartner_anschrift" style="width: 90%;" maxlength="100" value="'. $date->getValue('dat_ansprechpartner_anschrift'). '" />            
+              </dd>
+            </dl>
+          </li>';        
+          echo '<li>
+            <dl>
+              <dt><label for="dat_verein">Verein/Veranstalter:</label></dt>
+              <dd>
+                <input type="text" id="dat_verein" name="dat_verein" style="width: 90%;" maxlength="100" value="'. $date->getValue('dat_verein'). '" />
+              </dd>
+            </dl>
+          </li>';        
+          echo '<li>
+            <dl>
+              <dt><label for="dat_vereinsnummer">Vereinsnummer:</label></dt>
+              <dd>
+                <input type="text" id="dat_vereinsnummer" name="dat_vereinsnummer" style="width: 30%;" maxlength="6" value="'. $date->getValue('dat_vereinsnummer'). '" />      
+              </dd>
+            </dl>
+          </li>';          
+          echo '<li>
+            <dl>
+              <dt><label for="dat_tel">Telefon:</label></dt>
+              <dd>
+                <input type="text" id="dat_tel" name="dat_tel" style="width: 90%;" maxlength="100" value="'. $date->getValue('dat_tel'). '" />
+              </dd>
+            </dl>
+          </li>';        
+          echo '<li>
+            <dl>
+              <dt><label for="dat_fax">Fax:</label></dt>
+              <dd>
+                <input type="text" id="dat_fax" name="dat_fax" style="width: 90%;" maxlength="100" value="'. $date->getValue('dat_fax'). '" />
+              </dd>
+            </dl>
+          </li>';        
+          echo '<li>
+            <dl>
+              <dt><label for="dat_handy">Handy:</label></dt>
+              <dd>
+                <input type="text" id="dat_handy" name="dat_handy" style="width: 90%;" maxlength="100" value="'. $date->getValue('dat_handy'). '" />
+              </dd>
+            </dl>
+          </li>';        
+          echo '<li>
+            <dl>
+              <dt><label for="dat_mail">Mail zum Veranstalter:</label></dt>
+              <dd>
+                <input type="text" id="dat_mail" name="dat_mail" style="width: 90%;" maxlength="100" value="'. $date->getValue('dat_mail'). '" />
+              </dd>
+            </dl>
+          </li>';        
+          echo '<li>
+            <dl>
+              <dt><label for="dat_link">Link zur Veranstaltung:</label></dt>
+              <dd>
+                <input type="text" id="dat_link" name="dat_link" style="width: 90%;" maxlength="100" value="'. $date->getValue('dat_link'). '" />
+              </dd>
+            </dl>
+          </li>';                               
+        echo '
 				</ul>
 			</div>
 		</div>';
@@ -514,14 +1099,20 @@ echo '
 					<li>
 						<dl>
 							<dt>&nbsp;</dt>
-							<dd>
-								<input type="checkbox" id="dateRegistrationPossible" name="dateRegistrationPossible"';
+              <dd>';
 								if($dateRegistrationPossible == 1)
 								{
+                  echo'<input type="checkbox" id="dateRegistrationPossible" name="dateRegistrationPossible"';
 									echo ' checked="checked" ';
+                  echo ' value="1" />';
 								}
-								echo ' value="1" />
-								<label for="dateRegistrationPossible">'.$gL10n->get('DAT_REGISTRATION_POSSIBLE').'</label>
+                if($dateRegistrationPossible == 0)
+                {
+                  echo'<input type="checkbox" id="dateRegistrationPossible" name="dateRegistrationPossible"';
+                  echo ' value="1" />';
+                }
+               
+                echo' <label for="dateRegistrationPossible">'.$gL10n->get('DAT_REGISTRATION_POSSIBLE').'</label>
 								<a rel="colorboxHelp" href="'. $g_root_path. '/adm_program/system/msg_window.php?message_id=DAT_LOGIN_POSSIBLE&amp;inline=true"><img 
 									onmouseover="ajax_showTooltip(event,\''.$g_root_path.'/adm_program/system/msg_window.php?message_id=DAT_LOGIN_POSSIBLE\',this)" 
 									onmouseout="ajax_hideTooltip()" class="iconHelpLink" src="'. THEME_PATH. '/icons/help.png" alt="Help" title="" /></a>
@@ -533,8 +1124,10 @@ echo '
 							<dt>&nbsp;</dt>
 							<dd>
 								<input type="checkbox" id="dateCurrentUserAssigned" name="dateCurrentUserAssigned"';
+
 								if($dateCurrentUserAssigned == 1)
 								{
+
 									echo ' checked="checked" ';
 								}
 								echo ' value="1" />
@@ -562,7 +1155,7 @@ echo '
 		<div class="groupBox" id="admDescription">
 			<div class="groupBoxHeadline" id="admDescriptionHead">
 				<a class="iconShowHide" href="javascript:showHideBlock(\'admDescriptionBody\', \''.$gL10n->get('SYS_FADE_IN').'\', \''.$gL10n->get('SYS_HIDE').'\')"><img
-				id="admDescriptionBodyImage" src="'. THEME_PATH. '/icons/triangle_open.gif" alt="'.$gL10n->get('SYS_HIDE').'" title="'.$gL10n->get('SYS_HIDE').'" /></a>'.$gL10n->get('SYS_DESCRIPTION').'
+        id="admDescriptionBodyImage" src="'. THEME_PATH. '/icons/triangle_open.gif" alt="'.$gL10n->get('SYS_HIDE').'" title="'.$gL10n->get('SYS_HIDE').'" /></a>'.'DRBV interne Notiz'.'
 			</div>
 
 			<div class="groupBoxBody" id="admDescriptionBody">
@@ -570,6 +1163,18 @@ echo '
                     <li>'.$ckEditor->createEditor('dat_description', $date->getValue('dat_description'), 'AdmidioDefault', 150).'</li>
                 </ul>
             </div>
+    </div>
+    <div class="groupBox" id="admDescription2">                  
+      <div class="groupBoxHeadline" id="admDescriptionHead2">
+        <a class="iconShowHide" href="javascript:showHideBlock(\'admDescriptionBody2\', \''.$gL10n->get('SYS_FADE_IN').'\', \''.$gL10n->get('SYS_HIDE').'\')"><img
+        id="admDescriptionBody2Image" src="'. THEME_PATH. '/icons/triangle_open.gif" alt="'.$gL10n->get('SYS_HIDE').'" title="'.$gL10n->get('SYS_HIDE').'" /></a>'.'&Ouml;ffentliche Bemerkung'.'
+      </div>
+
+      <div class="groupBoxBody" id="admDescriptionBody2">
+        <ul class="formFieldList">
+          <li>'.$ckEditor->createEditor('dat_notiz', $date->getValue('dat_notiz'), 'AdmidioDefault', 150).'</li>
+        </ul>
+      </div>
         </div>';
 
         // show informations about user who creates the recordset and changed it
@@ -594,3 +1199,4 @@ echo '
 
 require(SERVER_PATH. '/adm_program/system/overall_footer.php');
 ?>
+

@@ -157,7 +157,7 @@ else
                     echo '</div>
             </div>
 
-            <div class="boxBody">'.
+                      <div class="boxBody" style="text-align:justify;font-size:0.775em;">'.
                 $announcement->getValue('ann_description').
 
                 // show informations about user who creates the recordset and changed it

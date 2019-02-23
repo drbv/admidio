@@ -44,11 +44,11 @@ if(isset($gLayout['includes']) == false)
 
 if(strlen($gLayout['title']) > 0)
 {
-    $g_page_title = $gCurrentOrganization->getValue('org_longname'). ' - '. $gLayout['title'];
+    $g_page_title = htmlspecialchars_decode($gCurrentOrganization->getValue('org_longname'). ' - '. $gLayout['title']);
 }
 else
 {
-	$g_page_title = $gCurrentOrganization->getValue('org_longname');
+  $g_page_title = htmlspecialchars_decode($gCurrentOrganization->getValue('org_longname'));
 }
 
 header('Content-type: text/html; charset=utf-8'); 
@@ -57,6 +57,7 @@ echo '
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="de" xml:lang="de">
 <head>
     <!-- (c) 2004 - 2013 The Admidio Team - http://www.admidio.org -->
+    <!-- (c) 2014 Adapted by DRBV Webteam to a online version of the couples competition book -->
     
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     

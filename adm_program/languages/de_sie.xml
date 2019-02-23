@@ -954,8 +954,10 @@
 	<text id="PRO_LOGIN_NAME_EXIST" development="new" translation="todo">Der gewählte Benutzername existiert schon.\n\nWähle bitte einen anderen Namen.</text>
 	<text id="PRO_MAINTAIN_PROFILE_FIELDS" development="new" translation="todo">Profilfelder pflegen</text>
 	<text id="PRO_MAINTAIN_PROFILE_FIELDS_DESC" development="new" translation="todo">In der Profilfeldpflege können Profilfelder angelegt und bearbeitet werden. Diese können dann in Kategorien zusammengefasst werden.\n%VAR1% Alle nicht gespeicherten Organisationseinstellungen gehen dabei verloren.</text>
+  <text id="PRO_MY_FORMS" development="new" translation="todo">Formulare</text>
+  <text id="PRO_MY_FORMS_DESC" development="new" translation="todo">Formulare zur Bestellung/Änderung von Startbüchern/Startkarten und Startmarken.</text>
 	<text id="PRO_MY_PROFILE" development="new" translation="todo">Mein Profil</text>
-    <text id="PRO_MY_PROFILE_DESC" development="new" translation="todo">Das eigene Benutzerprofil kann hier angeschaut und bearbeitet werden.</text>
+    <text id="PRO_MY_PROFILE_DESC" development="new" translation="todo">Das eigene Benutzer- bzw. Vereinsprofil kann hier angeschaut und bearbeitet werden.</text>
 	<text id="PRO_NEW_PASSWORD" development="new" translation="todo">Neues Passwort</text>
 	<text id="PRO_NEW_PICTURE" development="new" translation="todo">Neues Profilfoto</text>
 	<text id="PRO_PASSWORD_CHANGED" development="new" translation="todo">Das Passwort wurde erfolgreich geändert.</text>
@@ -1218,7 +1220,7 @@
     <text id="SYS_ISO_8859_1" development="new" translation="todo">ISO-8859-1</text>
     <text id="SYS_LANGUAGE" development="new" translation="todo">Sprache</text>
     <text id="SYS_LAST_EDITED_BY" development="new" translation="todo">Zuletzt bearbeitet von %VAR1% am %VAR2%</text>
-	<text id="SYS_LASTNAME" development="new" translation="todo">Nachname</text>
+  <text id="SYS_LASTNAME" development="new" translation="todo">Nachname/Startbuchnr</text>
     <text id="SYS_LATER" development="new" translation="todo">Später</text>
     <text id="SYS_LEADER" development="new" translation="todo">Leiter</text>
     <text id="SYS_LINK_TO" development="new" translation="todo">Link auf %VAR1%</text>

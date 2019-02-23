@@ -9,6 +9,7 @@
  *****************************************************************************/
  
 require_once(SERVER_PATH. '/adm_program/system/db/db_common.php');
+require_once(SERVER_PATH. '/adm_program/system/drbv_funktionen.php');
  
 class DBMySQL extends DBCommon
 {
@@ -21,23 +22,26 @@ class DBMySQL extends DBCommon
         $this->password  = $sql_password;
         $this->dbName    = $sql_dbName;
         
-        $this->connectId = @mysql_connect($this->server, $this->user, $this->password, $new_connection);
+        //$this->connectId = @mysqli_connect($this->server, $this->user, $this->password, $new_connection);
+        //$this->connectId = @mysqli_connect($this->server, $this->user, $this->password, $this->dbName, $new_connection);
+        $this->connectId = @mysqli_connect($this->server, $this->user, $this->password, $this->dbName, $new_connection);
         
         if($this->connectId)
         {
-            if (@mysql_select_db($this->dbName, $this->connectId))
-            {
+            //if (@mysqli_select_db($this->dbName, $this->connectId))
+            //if (@mysqli_select_db($this->connectId))
+            //{
 				// Verbindung zur DB in UTF8 aufbauen
-				@mysql_query('SET NAMES \'utf8\'', $this->connectId);
+                @mysqli_query($this->connectId, 'SET NAMES \'utf8\'');
 
                 // ANSI Modus setzen, damit SQL kompatibler zu anderen DBs werden kann
-                @mysql_query('SET SQL_MODE = \'ANSI\'', $this->connectId);
+                @mysqli_query($this->connectId, 'SET SQL_MODE = \'ANSI\'');
                 
                 // falls der Server die Joins begrenzt hat, kann dies mit diesem Statement aufgehoben werden
-                @mysql_query('SET SQL_BIG_SELECTS = 1', $this->connectId);
+                @mysqli_query($this->connectId, 'SET SQL_BIG_SELECTS = 1');
 
                 return $this->connectId;
-            }
+            //}
         }
         return false;
     }
@@ -45,7 +49,7 @@ class DBMySQL extends DBCommon
     // Bewegt den internen Ergebnis-Zeiger
     public function data_seek($result, $rowNumber)
     {
-        return mysql_data_seek($result, $rowNumber);
+        return mysqli_data_seek($result, $rowNumber);
     }   
     
     // Uebergibt Fehlernummer und Beschreibung an die uebergeordnete Fehlerbehandlung
@@ -55,11 +59,11 @@ class DBMySQL extends DBCommon
         {
             if (!$this->connectId)
             {
-                parent::db_error(@mysql_errno(), @mysql_error());
+                parent::db_error(@mysqli_errno(), @mysqli_error());
             }
             else
             {
-                parent::db_error(@mysql_errno($this->connectId), @mysql_error($this->connectId));
+                parent::db_error(@mysqli_errno($this->connectId), @mysqli_error($this->connectId));
             }
         }
         else
@@ -71,7 +75,7 @@ class DBMySQL extends DBCommon
     // Escaped den mysql String
     public function escape_string($string)
     {
-        return mysql_real_escape_string($string);
+        return mysqli_real_escape_string(DRBVdb(), $string);
     }
 
     // Gibt den Speicher für den Result wieder frei
@@ -81,7 +85,7 @@ class DBMySQL extends DBCommon
         {
             $result = $this->queryResult;
         }
-        return mysql_fetch_assoc($result);
+        return mysqli_fetch_assoc($result);
     }
 
     /** Fetch a result row as an associative array, a numeric array, or both.
@@ -92,14 +96,14 @@ class DBMySQL extends DBCommon
      */
     public function fetch_array($result = false, $resultType = 'BOTH')
     {
-        $typeArray = array('BOTH' => MYSQL_BOTH, 'ASSOC' => MYSQL_ASSOC, 'NUM' => MYSQL_NUM);
+        $typeArray = array('BOTH' => MYSQLI_BOTH, 'ASSOC' => MYSQLI_ASSOC, 'NUM' => MYSQLI_NUM);
 
         if($result === false)
         {
             $result = $this->queryResult;
         }
         
-        return mysql_fetch_array($result, $typeArray[$resultType]);
+        return mysqli_fetch_array($result, $typeArray[$resultType]);
     }
 
     public function fetch_object($result = false)
@@ -109,25 +113,28 @@ class DBMySQL extends DBCommon
             $result = $this->queryResult;
         }
         
-        return mysql_fetch_object($result);
+        return mysqli_fetch_object($result);
     }
 
     // Liefert den Namen eines Feldes in einem Ergebnis
     public function field_name($result, $index)
     {
-        return mysql_field_name($result, $index);
+       $colObj = mysqli_fetch_field_direct($result,$index);                            
+       $col    = $colObj->name;
+       //return mysql_field_name($result, $index);
+       return $col;
     }
 
     // Gibt den Speicher für den Result wieder frei
     public function free_result($result)
     {
-        return mysql_free_result($result);
+        return mysqli_free_result($result);
     }
 
     // Liefert die ID einer vorherigen INSERT-Operation
     public function insert_id()
     {
-        return mysql_insert_id($this->connectId);
+        return mysqli_insert_id($this->connectId);
     }
     
     // Liefert die Anzahl der Felder in einem Ergebnis
@@ -138,7 +145,7 @@ class DBMySQL extends DBCommon
             $result = $this->queryResult;
         }
         
-        return mysql_num_fields($result);
+        return mysqli_num_fields($result);
     }
     
     // Liefert die Anzahl der Datensaetze im Ergebnis
@@ -149,7 +156,7 @@ class DBMySQL extends DBCommon
             $result = $this->queryResult;
         }
         
-        return mysql_num_rows($result);
+        return mysqli_num_rows($result);
     }    
     
 	// send sql to database server 
@@ -165,7 +172,7 @@ class DBMySQL extends DBCommon
             error_log($sql);
         }
 
-        $this->queryResult = mysql_query($sql, $this->connectId);
+        $this->queryResult = mysqli_query($this->connectId,$sql);
 
         if($this->queryResult == false && $throwError == true)
         {
@@ -183,13 +190,14 @@ class DBMySQL extends DBCommon
         {
             $database = $this->dbName;
         }
-        return mysql_select_db($database, $this->connectId);
+        //return mysqli_select_db($database, $this->connectId);//BOZO geht so nicht mehr
+        return mysqli_select_db($this->connectId, $database);
     }
 
     // returns the MySQL version of the database
     public function server_info()
     {
-		return mysql_get_server_info();
+      return mysqli_get_server_info();
     }
 
     // setzt die urspruengliche DB wieder auf aktiv

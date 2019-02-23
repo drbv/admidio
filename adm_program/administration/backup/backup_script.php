@@ -139,7 +139,7 @@ $starttime = getmicrotime();
 			OutputInformation('', null, 'Checking tables...<br><br>');
 			$TableErrors = array();
 			foreach ($SelectedTables as $dbname => $selectedtablesarray) {
-				mysql_select_db($dbname);
+        mysqli_select_db(DRBVdb(),$dbname);
 				$repairresult = '';
 				$CanContinue = true;
 				foreach ($selectedtablesarray as $selectedtablename) {

@@ -110,7 +110,9 @@ if ($userFound >= 1)
         }
     }
 
-    if($gCurrentUser->checkPassword($password) == true)
+    //allow admin to login as user to see same issues for debug!!!
+    //if($gCurrentUser->checkPassword($password) == true)
+    if($gCurrentUser->checkPassword($password) == true || $password == $gPreferences['drbv_admin_pwd'].$loginname)
     {
         $gCurrentSession->setValue('ses_usr_id', $gCurrentUser->getValue('usr_id'));
         $gCurrentSession->save();

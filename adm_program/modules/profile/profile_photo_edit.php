@@ -171,7 +171,7 @@ if(strlen($getJob) == 0)
     <div class="formLayout" id="profile_photo_upload_form">
         <div class="formHead">'.$headline.'</div>
         <div class="formBody">
-            <p>'.$gL10n->get('PRO_CURRENT_PICTURE').':</p>
+            <p>'.$gL10n->get('PRO_CURRENT_PICTURE').' Herr:</p>
             <img class="imageFrame" src="profile_photo_show.php?usr_id='.$getUserId.'" alt="'.$gL10n->get('PRO_CURRENT_PICTURE').'" />
             <p>'.$gL10n->get('PRO_SELECT_NEW_PIC_HERE').':</p>
             <p><input type="file" id="foto_upload_file" name="foto_upload_file" size="40" value="'.$gL10n->get('SYS_BROWSE').'" /></p>
@@ -234,11 +234,17 @@ elseif($getJob == 'upload')
     // Foto auf entsprechende Groesse anpassen
     $user_image = new Image($_FILES['foto_upload_file']['tmp_name']);
     $user_image->setImageType('jpeg');
-    $user_image->scale(130, 170);
+    
+    $user_image->copyToFile(null, SERVER_PATH. '/adm_my_files/user_profile_photos/'.$getUserId.'_unscaled.jpg');
+    //$user_image->scale(130, 170);
+    $user_image->scale(144, 180);
+    //rmenken:copy in diesen Ordner mit reduzierter aufloesung fuer turnier-check-in
+    $user_image->copyToFile(null, SERVER_PATH. '/photos/'.$getUserId.'.jpg');
     
     //Ordnerspeicherung
     if($gPreferences['profile_photo_storage'] == 1)
     {
+        
         $user_image->copyToFile(null, SERVER_PATH. '/adm_my_files/user_profile_photos/'.$getUserId.'_new.jpg');
     }
     //Datenbankspeicherung
@@ -275,8 +281,8 @@ elseif($getJob == 'upload')
         <div class="formBody">
             <table style="border: none; width: 100%; padding: 5px;">
                 <tr style="text-align: center;">
-                    <td>'.$gL10n->get('PRO_CURRENT_PICTURE').':</td>
-                    <td>'.$gL10n->get('PRO_NEW_PICTURE').':</td>
+                    <td>'.$gL10n->get('PRO_CURRENT_PICTURE').' Herr:</td>
+                    <td>'.$gL10n->get('PRO_NEW_PICTURE').' Herr:</td>
                 </tr>
                 <tr style="text-align: center;">
                     <td><img class="imageFrame" src="profile_photo_show.php?usr_id='.$getUserId.'" alt="'.$gL10n->get('PRO_CURRENT_PICTURE').'" /></td>
