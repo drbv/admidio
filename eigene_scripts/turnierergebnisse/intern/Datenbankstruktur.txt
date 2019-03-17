@@ -1,0 +1,269 @@
+-- phpMyAdmin SQL Dump
+-- version 4.2.2
+-- http://www.phpmyadmin.net
+--
+-- Host: XXX
+-- Erstellungszeit: 19. Jul 2016 um 09:06
+-- Server Version: 5.5.49-0+deb7u1-log
+-- PHP-Version: 5.6.23
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+--
+-- Datenbank: `XXX`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `paare`
+--
+
+CREATE TABLE IF NOT EXISTS `paare` (
+`id_paare` int(11) NOT NULL,
+  `paar_id_tlp` int(3) NOT NULL,
+  `turniernummer` int(7) NOT NULL,
+  `startklasse` varchar(10) COLLATE utf8_unicode_ci NOT NULL,
+  `startnummer` int(3) NOT NULL,
+  `dame` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `herr` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `team` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `startbuch` int(5) NOT NULL,
+  `boogie_sb_herr` int(5) NOT NULL,
+  `boogie_sb_dame` int(5) NOT NULL,
+  `platz` int(3) NOT NULL,
+  `punkte` int(2) NOT NULL,
+  `rl_punkte` int(3) NOT NULL,
+  `Akro1_VR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert1_VR` float NOT NULL,
+  `Akro2_VR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert2_VR` float NOT NULL,
+  `Akro3_VR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert3_VR` float NOT NULL,
+  `Akro4_VR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert4_VR` float NOT NULL,
+  `Akro5_VR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert5_VR` float NOT NULL,
+  `Akro6_VR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert6_VR` float NOT NULL,
+  `Akro7_VR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert7_VR` float NOT NULL,
+  `Akro8_VR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert8_VR` float NOT NULL,
+  `Akro1_ZR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert1_ZR` float NOT NULL,
+  `Akro2_ZR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert2_ZR` float NOT NULL,
+  `Akro3_ZR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert3_ZR` float NOT NULL,
+  `Akro4_ZR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert4_ZR` float NOT NULL,
+  `Akro5_ZR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert5_ZR` float NOT NULL,
+  `Akro6_ZR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert6_ZR` float NOT NULL,
+  `Akro7_ZR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert7_ZR` float NOT NULL,
+  `Akro8_ZR` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert8_ZR` float NOT NULL,
+  `Akro1_ER` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert1_ER` float NOT NULL,
+  `Akro2_ER` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert2_ER` float NOT NULL,
+  `Akro3_ER` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert3_ER` float NOT NULL,
+  `Akro4_ER` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert4_ER` float NOT NULL,
+  `Akro5_ER` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert5_ER` float NOT NULL,
+  `Akro6_ER` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert6_ER` float NOT NULL,
+  `Akro7_ER` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert7_ER` float NOT NULL,
+  `Akro8_ER` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `Wert8_ER` float NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `rundentab`
+--
+
+CREATE TABLE IF NOT EXISTS `rundentab` (
+`rt_id` int(11) NOT NULL,
+  `rt_id_tlp` int(2) NOT NULL,
+  `turniernummer` int(7) NOT NULL,
+  `startklasse` varchar(10) COLLATE utf8_unicode_ci NOT NULL,
+  `runde` varchar(15) COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `Turnier`
+--
+
+CREATE TABLE IF NOT EXISTS `Turnier` (
+`id_turnier` int(11) NOT NULL,
+  `turniernummer` int(7) NOT NULL,
+  `turniername` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `datum` date NOT NULL,
+  `veranstalter_nr` int(5) NOT NULL,
+  `veranstalter_name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `veranstaltung_ort` varchar(50) COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `T_Leiter`
+--
+
+CREATE TABLE IF NOT EXISTS `T_Leiter` (
+`id_leiter` int(11) NOT NULL,
+  `tl_id_tlp` int(2) NOT NULL,
+  `turniernummer` int(7) NOT NULL,
+  `lizenznummer` varchar(4) COLLATE utf8_unicode_ci NOT NULL,
+  `name` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `funktion` varchar(10) COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `wertungen`
+--
+
+CREATE TABLE IF NOT EXISTS `wertungen` (
+`wert_id` int(11) NOT NULL,
+  `turniernummer` int(7) NOT NULL,
+  `paar_id_tlp` int(3) NOT NULL,
+  `rh` int(2) NOT NULL,
+  `wr_id` int(2) NOT NULL,
+  `rund_tab_id` int(3) NOT NULL,
+  `herr_gt` float NOT NULL,
+  `herr_halt_dt` float NOT NULL,
+  `dame_gt` float NOT NULL,
+  `dame_halt_dt` float NOT NULL,
+  `choreo` float NOT NULL,
+  `tanzfiguren` float NOT NULL,
+  `taenz_darbietung` float NOT NULL,
+  `grobfehler_text` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `grobfehler_summe` float NOT NULL,
+  `akro1` float NOT NULL,
+  `akro1_grobfehler_text` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `akro1_grobfehler_summe` float NOT NULL,
+  `akro2` float NOT NULL,
+  `akro2_grobfehler_text` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `akro2_grobfehler_summe` float NOT NULL,
+  `akro3` float NOT NULL,
+  `akro3_grobfehler_text` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `akro3_grobfehler_summe` float NOT NULL,
+  `akro4` float NOT NULL,
+  `akro4_grobfehler_text` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `akro4_grobfehler_summe` float NOT NULL,
+  `akro5` float NOT NULL,
+  `akro5_grobfehler_text` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `akro5_grobfehler_summe` float NOT NULL,
+  `akro6` float NOT NULL,
+  `akro6_grobfehler_text` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `akro6_grobfehler_summe` float NOT NULL,
+  `akro7` float NOT NULL,
+  `akro7_grobfehler_text` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `akro7_grobfehler_summe` float NOT NULL,
+  `akro8` float NOT NULL,
+  `akro8_grobfehler_text` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `akro8_grobfehler_summe` float NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `wertungsrichter`
+--
+
+CREATE TABLE IF NOT EXISTS `wertungsrichter` (
+`id_wr` int(11) NOT NULL,
+  `wr_id_tlp` int(2) NOT NULL,
+  `turniernummer` int(7) NOT NULL,
+  `lizenznummer` varchar(4) COLLATE utf8_unicode_ci NOT NULL,
+  `name` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `kuerzel` varchar(1) COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `paare`
+--
+ALTER TABLE `paare`
+ ADD PRIMARY KEY (`id_paare`);
+
+--
+-- Indexes for table `rundentab`
+--
+ALTER TABLE `rundentab`
+ ADD PRIMARY KEY (`rt_id`);
+
+--
+-- Indexes for table `Turnier`
+--
+ALTER TABLE `Turnier`
+ ADD PRIMARY KEY (`id_turnier`), ADD UNIQUE KEY `id_turnier` (`id_turnier`);
+
+--
+-- Indexes for table `T_Leiter`
+--
+ALTER TABLE `T_Leiter`
+ ADD PRIMARY KEY (`id_leiter`), ADD KEY `turniernummer` (`turniernummer`);
+
+--
+-- Indexes for table `wertungen`
+--
+ALTER TABLE `wertungen`
+ ADD PRIMARY KEY (`wert_id`);
+
+--
+-- Indexes for table `wertungsrichter`
+--
+ALTER TABLE `wertungsrichter`
+ ADD PRIMARY KEY (`id_wr`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `paare`
+--
+ALTER TABLE `paare`
+MODIFY `id_paare` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `rundentab`
+--
+ALTER TABLE `rundentab`
+MODIFY `rt_id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `Turnier`
+--
+ALTER TABLE `Turnier`
+MODIFY `id_turnier` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `T_Leiter`
+--
+ALTER TABLE `T_Leiter`
+MODIFY `id_leiter` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `wertungen`
+--
+ALTER TABLE `wertungen`
+MODIFY `wert_id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `wertungsrichter`
+--
+ALTER TABLE `wertungsrichter`
+MODIFY `id_wr` int(11) NOT NULL AUTO_INCREMENT;

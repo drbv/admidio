@@ -1,0 +1,4 @@
+AuthType Basic
+AuthName "Eigene Scripts" 
+AuthUserFile "/homepages/42/d535113983/htdocs/adm/eigene_scripts/intern/.htpasswd"
+require valid-user
