@@ -283,6 +283,4 @@ if($zaehler == 2)
       {
        music_zert_mail($inhalt_mail);
       }
-
-  }
   ?>
