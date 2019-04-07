@@ -76,7 +76,7 @@ print_r($_SESSION);echo' SESSION<p />';
 echo'<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
 echo'Vorname: <input type="text" name="vorname" value="' . $_POST['vorname'] . '"  size="20" maxlength="20"><br />';
 echo'Nachname: <input type="text" name="nachname" value="' . $_POST['nachname'] . '"  size="20" maxlength="20"><br />';
-echo'Lizenznummer: <input type="text" name="lizenz" value="' . $_POST['lizenz'] . '"  size="4" maxlength="4"><br />';
+echo'Lizenznummer: <input type="text" name="lizenz" value="' . $_POST['lizenz'] . '"  size="4" maxlength="4"> Wenn bekannt.<br />';
 /*
        //$inhalt = $_POST['vorname'] . ' - ' . $_POST['nachname'] . ' - ' . $_POST['lizenz'] . ' - ' . date('d.m.Y H:i:s') . ' - ';
        $inhalt .=  $_SESSION['javavalues'];
@@ -97,11 +97,12 @@ if($_POST['absenden']) {
        echo'Bitte geben Sie Ihren Nachnamen ein!<p />';
        $fehler = 1;
     }
+    /*
     if(!$_POST['lizenz']) {
        echo'Bitte geben Sie Ihre Lizenznummer ein!<p />';
        $fehler = 1;
     }
-
+    */
 if(!$fehler && $_SESSION['browser']) {
     echo $fehler;
        
@@ -111,37 +112,37 @@ if(!$fehler && $_SESSION['browser']) {
     </script><br>';
 
     echo'<b>Auflösung: </b><script>
-    document.write(getScreenPrint);
+    document.write(aufloesung);
     </script><br>';
-
+    
     echo'<b>Mobil: </b><script>
-    document.write(isMobile);
+    document.write(mobile);
     </script><br>';
 
     echo'<b>Java: </b><script>
-    document.write(isJava);</script><b> Version: </b><script>
-    document.write(getJavaVersion);
+    document.write(java);</script><b> Version: </b><script>
+    document.write(java_version);
     </script><br>';
 
     echo'<b>Flash: </b><script>
-    document.write(isFlash);</script><b> Version: </b><script>
-    document.write(getFlashVersion);
+    document.write(flash);</script><b> Version: </b><script>
+    document.write(flash_version);
     </script><br>';
     
     echo'<b>Cookies: </b><script>
-    document.write(isCookie);
+    document.write(cookie);
     </script><br>';
 
     echo'<b>Zeitzone: </b><script>
-    document.write(getTimeZone);
+    document.write(zeitzone);
     </script><br>';
 
     echo'<b>Sprache: </b><script>
-    document.write(getLanguage);
+    document.write(sprache);
     </script><br>';
 
     echo'<b>Schriften: </b><script>
-    document.write(getFonts);
+    document.write(fonts);
     </script><br>';
 
     echo'<b>OS: </b><script>
